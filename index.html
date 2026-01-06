@@ -756,20 +756,20 @@
         function initMemory() {
             const d = document.getElementById('dom-game-wrap'); d.style.display = 'block'; d.innerHTML = '<div class="memory-grid" id="mgrid"></div>';
             const pack = paths[state.path].icons;
-            // 4x4 = 16 cards. 8 pairs.
-            let icons8 = pack.slice(0, 8);
-            let cards = [...icons8, ...icons8];
+            // 8 cards total = 4 pairs.
+            let icons4 = pack.slice(0, 4);
+            let cards = [...icons4, ...icons4];
             cards.sort(() => Math.random() - 0.5);
             let fli = []; let match = 0;
 
             cards.forEach(e => {
-                const c = document.createElement('div'); c.className = 'mem-card'; c.onclick = () => {
+                const c = document.createElement('div'); c.className = 'mem-card'; c.style.aspectRatio = "1"; c.onclick = () => {
                     if (fli.length < 2 && !c.innerText && !c.classList.contains('solved')) {
                         c.innerText = e; fli.push(c);
                         if (fli.length === 2) {
                             if (fli[0].innerText === fli[1].innerText) {
                                 match++; fli[0].classList.add('solved'); fli[1].classList.add('solved'); fli[0].style.borderColor = 'var(--green)'; fli[1].style.borderColor = 'var(--green)';
-                                fli = []; if (match === 8) endMinigame(true, 20);
+                                fli = []; if (match === 4) endMinigame(true, 20);
                             } else {
                                 setTimeout(() => { fli[0].innerText = ''; fli[1].innerText = ''; fli = []; }, 600);
                             }

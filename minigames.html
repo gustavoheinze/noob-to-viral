@@ -480,8 +480,8 @@
         function initMemory() {
             const d = document.getElementById('dom-game-wrap');
             d.style.display = 'block';
-            d.innerHTML = '<h3 style="text-align:center; margin-bottom:20px;">Encuentra las 8 parejas</h3><div class="memory-grid" id="mg"></div>';
-            const base = ['🎮', '🖱️', '🎧', '⌨️', '🏆', '👾', '🕹️', '🔋'];
+            d.innerHTML = '<h3 style="text-align:center; margin-bottom:20px;">Encuentra los 4 pares</h3><div class="memory-grid" id="mg"></div>';
+            const base = ['🎮', '🖱️', '🎧', '⌨️']; // 4 icons for 8 cards
             let cards = [...base, ...base].sort(() => Math.random() - 0.5);
             let flipped = [];
             let matches = 0;
@@ -499,7 +499,7 @@
                                 flipped[0].classList.add('matched');
                                 flipped[1].classList.add('matched');
                                 flipped = [];
-                                if (matches === 8) endGame(true);
+                                if (matches === 4) endGame(true);
                             } else {
                                 setTimeout(() => {
                                     flipped[0].innerText = '';
