@@ -515,10 +515,22 @@
         }
 
         let mgInt; let mgAnim; let mScore = 0; let mTimer = 0; let mLives = 3; let currentWord = "";
+        let mgTimeouts = []; let mgIntervals = []; let mgActive = false;
+
+        function clearMGStuff() {
+            clearInterval(mgInt);
+            if (mgAnim) cancelAnimationFrame(mgAnim);
+            mgTimeouts.forEach(t => clearTimeout(t));
+            mgIntervals.forEach(i => clearInterval(i));
+            mgTimeouts = []; mgIntervals = [];
+        }
+
         function startActiveMinigame() {
             showScreen('mg-play'); const c = document.getElementById('canvas-game'); const d = document.getElementById('dom-game-wrap');
-            c.style.display = 'none'; d.style.display = 'none'; clearInterval(mgInt); if (mgAnim) cancelAnimationFrame(mgAnim);
-            mScore = 0; mTimer = 0; mLives = 3; updateMGHeader();
+            c.style.display = 'none'; d.style.display = 'none';
+            clearMGStuff();
+            mScore = 0; mTimer = 0; mLives = 3; mgActive = true;
+            updateMGHeader();
 
             switch (state.currentMG.id) {
                 case 'clicker': mTimer = 15; initClicker(); break;
@@ -559,7 +571,9 @@
         }
 
         function endMinigame(success, gain = 10) {
-            clearInterval(mgInt); if (mgAnim) cancelAnimationFrame(mgAnim);
+            if (!mgActive) return;
+            mgActive = false;
+            clearMGStuff();
             state.mgPerformance.push(success);
             state.history.push({ title: paths[state.path].scenarios[state.level].t, choice: 'ACCIÓN', mgResult: success ? 'WIN' : 'LOSS' });
 
@@ -826,14 +840,15 @@
                 const box = document.getElementById('nbox');
                 if (box) {
                     box.innerText = emojis[seq[i]];
-                    setTimeout(() => box.innerText = '', 500);
+                    mgTimeouts.push(setTimeout(() => { if (box) box.innerText = ''; }, 500));
                     i++;
                     if (i >= 4) {
                         clearInterval(iv);
-                        setTimeout(() => enable(), 600); // Wait before showing buttons
+                        mgTimeouts.push(setTimeout(() => enable(), 600)); // Wait before showing buttons
                     }
                 }
             }, 1000);
+            mgIntervals.push(iv);
             function enable() {
                 const ctr = document.getElementById('nbtns'); ctr.innerHTML = '';
                 emojis.forEach((em, idx) => {
@@ -916,27 +931,28 @@
             d.innerHTML = '<div id="react-box" style="width:100%; height:300px; background:var(--red); border-radius:15px; display:flex; justify-content:center; align-items:center; font-size:1.5rem; font-weight:bold; cursor:pointer;">ESPERA...</div>';
             const box = document.getElementById('react-box');
             let ready = false; let start = 0;
+            let delay = 2000 + Math.random() * 3000;
             let tout = setTimeout(() => {
                 ready = true; box.style.background = "var(--green)"; box.innerText = "¡YA! TOCA AQUÍ"; start = Date.now();
-            }, 2000 + Math.random() * 3000);
+                // Auto-fail after 500ms since it became green
+                mgTimeouts.push(setTimeout(() => {
+                    if (mgActive && ready) {
+                        box.style.background = "var(--red)";
+                        box.innerText = "¡MUY LENTO!";
+                        mgTimeouts.push(setTimeout(() => endMinigame(false), 500));
+                    }
+                }, 500));
+            }, delay);
+            mgTimeouts.push(tout);
 
             const handle = () => {
-                if (!ready) { clearTimeout(tout); endMinigame(false); }
+                if (!ready) { endMinigame(false); }
                 else {
                     const diff = Date.now() - start;
-                    // Green screen only lasts 500ms
                     if (diff <= 500) endMinigame(true, 20);
                     else endMinigame(false);
                 }
             };
-            // Auto-fail after 500ms if not clicked
-            setTimeout(() => {
-                if (ready) {
-                    box.style.background = "var(--red)";
-                    box.innerText = "¡MUY LENTO!";
-                    setTimeout(() => endMinigame(false), 500);
-                }
-            }, 2000 + 3000 + 500); // max wait + max delay + 500ms window
             box.onmousedown = (e) => { e.preventDefault(); handle(); };
             box.ontouchstart = (e) => { e.preventDefault(); handle(); };
         }

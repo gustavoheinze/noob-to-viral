@@ -253,6 +253,15 @@
 
     <script>
         let mgInt, mgAnim, mScore = 0, mTimer = 0, mLives = 3, currentWord = "", currentGameId = "";
+        let mgTimeouts = [], mgIntervals = [], mgActive = false;
+
+        function clearMGStuff() {
+            clearInterval(mgInt);
+            if (mgAnim) cancelAnimationFrame(mgAnim);
+            mgTimeouts.forEach(t => clearTimeout(t));
+            mgIntervals.forEach(i => clearInterval(i));
+            mgTimeouts = []; mgIntervals = [];
+        }
 
         function updateHeader() {
             document.getElementById('timer').innerText = mTimer;
@@ -260,8 +269,9 @@
         }
 
         function endGame(win) {
-            clearInterval(mgInt);
-            if (mgAnim) cancelAnimationFrame(mgAnim);
+            if (!mgActive) return;
+            mgActive = false;
+            clearMGStuff();
             document.getElementById('result-overlay').style.display = 'flex';
             document.getElementById('result-title').innerText = win ? "✅ ¡VICTORIA!" : "❌ FALLASTE";
             document.getElementById('result-title').style.color = win ? "var(--green)" : "var(--red)";
@@ -273,14 +283,14 @@
 
         function play(gameId) {
             // Reset
-            clearInterval(mgInt);
-            if (mgAnim) cancelAnimationFrame(mgAnim);
+            clearMGStuff();
             document.getElementById('canvas-game').style.display = 'none';
             document.getElementById('dom-game-wrap').style.display = 'none';
             hideResult();
             mScore = 0;
             mLives = 3;
             currentGameId = gameId;
+            mgActive = true;
 
             // Highlight active button
             document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
@@ -577,14 +587,15 @@
                 const box = document.getElementById('nbox');
                 if (box) {
                     box.innerText = emojis[seq[i]];
-                    setTimeout(() => box.innerText = '', 500);
+                    mgTimeouts.push(setTimeout(() => { if (box) box.innerText = ''; }, 500));
                     i++;
                     if (i >= 4) {
                         clearInterval(iv);
-                        setTimeout(() => enable(), 600);
+                        mgTimeouts.push(setTimeout(() => enable(), 600));
                     }
                 }
             }, 1000);
+            mgIntervals.push(iv);
 
             function enable() {
                 const ctr = document.getElementById('nbtns');
@@ -701,32 +712,32 @@
             const box = document.getElementById('react-box');
             let ready = false;
             let start = 0;
+            let delay = 2000 + Math.random() * 3000;
             let tout = setTimeout(() => {
                 ready = true;
                 box.style.background = "var(--green)";
                 box.innerText = "¡YA! TOCA AQUÍ";
                 start = Date.now();
-            }, 2000 + Math.random() * 3000);
+                // Auto-fail after 500ms
+                mgTimeouts.push(setTimeout(() => {
+                    if (mgActive && ready) {
+                        box.style.background = "var(--red)";
+                        box.innerText = "¡MUY LENTO!";
+                        mgTimeouts.push(setTimeout(() => endGame(false), 500));
+                    }
+                }, 500));
+            }, delay);
+            mgTimeouts.push(tout);
 
             const handle = () => {
                 if (!ready) {
-                    clearTimeout(tout);
                     endGame(false);
                 } else {
                     const diff = Date.now() - start;
-                    // Green screen only lasts 500ms
                     if (diff <= 500) endGame(true);
                     else endGame(false);
                 }
             };
-            // Auto-fail after 500ms if not clicked
-            setTimeout(() => {
-                if (ready) {
-                    box.style.background = "var(--red)";
-                    box.innerText = "¡MUY LENTO!";
-                    setTimeout(() => endGame(false), 500);
-                }
-            }, 2000 + 3000 + 500); // max wait + max delay + 500ms window
             box.onmousedown = (e) => {
                 e.preventDefault();
                 handle();
