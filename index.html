@@ -414,6 +414,12 @@
 
             <div class="history-container" id="history-log"></div>
 
+            <a href="https://www.ted.com/talks/carol_dweck_the_power_of_believing_that_you_can_improve?language=es"
+                target="_blank" class="btn btn-green"
+                style="text-decoration:none; display:inline-block; margin-bottom:10px;">
+                🧠 VER CHARLA TED: EL PODER DEL "TODAVÍA"
+            </a>
+            <br>
             <button class="btn" style="font-size:0.8rem; border-color:#444; color:#888;"
                 onclick="location.reload()">REINICIAR SIMULACIÓN</button>
         </div>
@@ -633,7 +639,14 @@
             document.getElementById('final-name-title').innerText = `INFORME: ${state.name.toUpperCase()}`;
             document.getElementById('final-val').innerText = state.skill + '%';
             document.getElementById('final-profile').innerText = profile;
-            document.getElementById('final-analysis-text').innerText = analysis;
+
+            // Add specific feedback about failures (Growth Mindset in action)
+            let growthFailures = state.history.filter(h => h.choice === 'ACCIÓN' && h.mgResult === 'LOSS').length;
+            if (growthFailures > 0) {
+                analysis += `<br><br><strong>Nota de Crecimiento:</strong> Has fallado en ${growthFailures} desafíos, ¡y eso es genial! En el Growth Mindset, el fallo no es el final, es solo información. Al atreverte a jugar y perder, has ganado más experiencia que el que nunca lo intentó.`;
+            }
+
+            document.getElementById('final-analysis-text').innerHTML = analysis;
 
             const log = document.getElementById('history-log'); log.innerHTML = '<b>Bitácora de Decisiones:</b><br>';
             state.history.forEach((h, i) => {
