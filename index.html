@@ -147,6 +147,11 @@
             color: var(--pink);
         }
 
+        .btn-pink:hover {
+            background: var(--pink);
+            color: #fff;
+        }
+
         .game-input {
             width: 100%;
             padding: 15px;
@@ -414,35 +419,14 @@
         </div>
     </div>
 
+    <script src="situations.js"></script>
     <script>
         const paths = {
             gaming: {
-                name: "Pro Gamer", scenarios: [
-                    { t: "Ranked Perdida", d: "Bajaste de rango. Tus amigos te llaman 'el ancla' del equipo.", f: "Soy un manco, nunca seré pro.", g: "Debo grindear más puntería." },
-                    { t: "Error en Torneo", d: "Fallaste el tiro decisivo frente a todo el público local.", f: "No sirvo bajo presión.", g: "Aún no controlo mis nervios." },
-                    { t: "Nerfeo de Main", d: "Tu personaje favorito ahora es débil tras el parche.", f: "Se acabó mi ventaja, ya no ganaré.", g: "Es hora de aprender un nuevo meta." },
-                    { t: "Lag Brutal", d: "Perdiste una final por un pico de lag repentino.", f: "Maldita suerte, no puedo avanzar.", g: "Pasa incluso a los mejores. Seguimos." },
-                    { t: "Burnout Pro", d: "Llevas 12 horas jugando y ya no coordinas bien.", f: "He perdido mi nivel.", g: "El descanso también es entrenamiento." },
-                    { t: "Equipo Disuelto", d: "Nadie quiere jugar contigo hoy, te sientes excluido.", f: "No soy lo suficientemente bueno.", g: "Practicaré solo para mejorar mi elo." },
-                    { t: "Hardstuck Oro", d: "Llevas meses en el mismo rango. Sientes que es tu techo.", f: "Aquí termina mi camino.", g: "Necesito cambiar mi rutina de entreno." },
-                    { t: "Streamer se burla", d: "Un pro reacciona a tu jugada y dice que eres mediocre.", f: "Qué vergüenza, borraré el juego.", g: "Sus críticas son datos para mejorar." },
-                    { t: "Final Nacional", d: "Estás frente a la pantalla más grande de tu vida. Sudas frío.", f: "Seguro haré el ridículo.", g: "Acepto el reto, gane o aprenda." },
-                    { t: "Crítica masiva", d: "Dicen que tu victoria fue 'suerte'.", f: "Tienen razón, no me lo merezco.", g: "Mi consistencia hablará por mí mañana." }
-                ], icons: ['🎮', '🖱️', '⌨️', '🎧', '🏆', '👾', '🕹️', '🔋']
+                name: "Pro Gamer", scenarios: [], icons: ['🎮', '🖱️', '⌨️', '🎧', '🏆', '👾', '🕹️', '🔋']
             },
             social: {
-                name: "Content Creator", scenarios: [
-                    { t: "Shadowban", d: "Tus views bajaron a cero de la noche a la mañana.", f: "El algoritmo me odia, me retiro.", g: "Estudiaré qué tendencias hay hoy." },
-                    { t: "Comentario Hater", d: "Un hater dijo que tu video es 'cringe' y tiene 10k likes.", f: "Soy una vergüenza pública.", g: "No me define un comentario ajeno." },
-                    { t: "Copia de Video", d: "Un influencer grande te robó la idea y se hizo viral.", f: "Nadie verá mi video original ya.", g: "Significa que mi talento es real." },
-                    { t: "Fallo de Audio", d: "Tu mejor video se grabó sin sonido por error.", f: "Soy un inútil con la tecnología.", g: "Aprenderé a revisar dos veces." },
-                    { t: "Menos Followers", d: "Perdiste 500 seguidores hoy sin razón aparente.", f: "He dejado de gustar.", g: "Filtrando a los que no conectan." },
-                    { t: "Rechazo de Sponsor", d: "La marca que querías te dijo que no eres profesional.", f: "Nunca seré alguien importante.", g: "Aún no tengo el perfil, pero lo tendré." },
-                    { t: "Envidia Pura", d: "Ves a alguien crecer 10 veces más rápido que tú.", f: "Él tiene suerte, yo no tengo futuro.", g: "Le pediré consejos para crecer yo." },
-                    { t: "Falta de Ideas", d: "Página en blanco. Llevas 3 días sin subir nada.", f: "Mi creatividad se esfumó.", g: "Consumiré arte para inspirarme." },
-                    { t: "Cancelado", d: "Te juzgan por algo que hiciste hace años.", f: "Mi carrera ha terminado.", g: "Pediré disculpas y mostraré mi cambio." },
-                    { t: "Miedo al Exito", d: "Te invitan a un podcast importante y tienes pánico.", f: "Diré que estoy enfermo.", g: "Es la oportunidad de subir de nivel." }
-                ], icons: ['📱', '📸', '✨', '❤️', '🔥', '🎬', '🎤', '💎']
+                name: "Content Creator", scenarios: [], icons: ['📱', '📸', '✨', '❤️', '🔥', '🎬', '🎤', '💎']
             }
         };
 
@@ -464,7 +448,15 @@
 
             state.name = name;
             state.path = p;
-            paths[p].scenarios.sort(() => Math.random() - 0.5); // Randomize Scenarios
+
+            // Randomly select 10 from all available scenarios in situations.js
+            let allScenarios = [...gameData[p]];
+            allScenarios.sort(() => Math.random() - 0.5);
+            paths[p].scenarios = allScenarios.slice(0, 10);
+
+            // Prepare unique minigames for this session
+            activeMinigames = [...minigames].sort(() => Math.random() - 0.5);
+
             state.level = 0; state.skill = 10; state.history = []; state.mgPerformance = [];
             loadScenario();
         }
@@ -505,11 +497,17 @@
             { id: 'memory', name: 'Memotest 4x4', desc: 'Encuentra las 8 parejas antes de que se acabe el tiempo (30s).', goal: 'Meta: Todas las parejas' },
             { id: 'word', name: 'Decodificador', desc: 'Descifra la palabra desordenada. Si el tiempo se acaba, pierdes.', goal: 'Meta: Palabra correcta' },
             { id: 'sorter', name: 'Ordenador Lógico', desc: 'Ordena de MENOR a MAYOR. Los errores no restan vida, pero pierdes tiempo.', goal: 'Meta: Orden perfecto' },
-            { id: 'neuro', name: 'Neuro-Patrón', desc: 'Memoriza la secuencia. Un solo error y PIERDES.', goal: 'Meta: Secuencia perfecta' }
+            { id: 'neuro', name: 'Neuro-Patrón', desc: 'Memoriza la secuencia de emojis. Si fallas, verás la corrección.', goal: 'Meta: Secuencia perfecta' },
+            { id: 'search', name: 'Caza del Intruso', desc: 'Encuentra al emoji intruso que es diferente a los demás lo más rápido posible.', goal: 'Meta: Encontrar al diferente' },
+            { id: 'math', name: 'Cálculo Rápido', desc: 'Resuelve 3 operaciones matemáticas simples antes de que se acabe el tiempo.', goal: 'Meta: 3 respuestas correctas' },
+            { id: 'reaction', name: 'Reflejo Puro', desc: 'Espera a que la pantalla cambie a VERDE y haz clic lo más rápido posible. No te adelantes.', goal: 'Meta: Click en verde' },
+            { id: 'collector', name: 'Recolector de Ideas', desc: 'Mueve el recolector para atrapar 10 estrellas fugaces. ¡Cuidado con los meteoritos rojos!', goal: 'Meta: 10 estrellas' }
         ];
 
+        let activeMinigames = [];
+
         function prepareMinigame() {
-            state.currentMG = minigames[Math.floor(Math.random() * minigames.length)];
+            state.currentMG = activeMinigames[state.level];
             document.getElementById('mg-name').innerText = state.currentMG.name;
             document.getElementById('mg-desc').innerText = state.currentMG.desc;
             document.getElementById('mg-goal').innerText = state.currentMG.goal;
@@ -529,6 +527,10 @@
                 case 'word': mTimer = 15; initWord(); break;
                 case 'sorter': mTimer = 15; initSorter(); break;
                 case 'neuro': mTimer = 25; initNeuro(); break;
+                case 'search': mTimer = 10; initSearch(); break;
+                case 'math': mTimer = 15; initMath(); break;
+                case 'reaction': mTimer = 10; initReaction(); break;
+                case 'collector': mTimer = 20; initCollector(); break;
             }
             mgInt = setInterval(() => {
                 mTimer--; updateMGHeader();
@@ -583,7 +585,9 @@
                 }
             } else {
                 h1.innerText = "REACCIÓN PASIVA"; ico.innerText = "🚫";
-                fb.innerHTML = `Te rendiste antes de empezar. El cerebro no aprende si evitas el desafío.<br><br><b>Penalización: -5% Skill</b>`;
+                const quote = gameData.quotes[Math.floor(Math.random() * gameData.quotes.length)];
+                fb.innerHTML = `<div style="font-style: italic; margin-bottom: 15px; color: #8b949e;">"${quote.text}"<br><span style="font-size: 0.8rem; font-weight: bold;">— ${quote.author}</span></div>
+                                Te rendiste antes de empezar. El cerebro no aprende si evitas el desafío.<br><br><b>Penalización: -5% Skill</b>`;
             }
             showScreen('result');
         }
@@ -597,15 +601,19 @@
 
             let profile = ""; let analysis = "";
             if (growthCount < 4) {
-                profile = "EL ESTATICO"; analysis = "Tu tendencia fue evitar el riesgo. El miedo al error te paralizó. Recuerda: fallar es la única manera de aprender.";
+                profile = gameData.profiles.static.title;
+                analysis = gameData.profiles.static.analysis;
             } else if (growthCount >= 8) {
                 if (mgWins / mgTotal > 0.7) {
-                    profile = "MAESTRO DEL AÚN"; analysis = "Impecable. No solo tomaste acción, sino que demostraste habilidad y resiliencia. Estás listo para cualquier desafío real.";
+                    profile = gameData.profiles.master.title;
+                    analysis = gameData.profiles.master.analysis;
                 } else {
-                    profile = "GUERRERO RESILIENTE"; analysis = "Tomaste todas las oportunidades de mejora. Aunque algunos retos te superaron, tu actitud fue la correcta. ¡Ese es el espíritu!";
+                    profile = gameData.profiles.warrior.title;
+                    analysis = gameData.profiles.warrior.analysis;
                 }
             } else {
-                profile = "EN TRANSICIÓN"; analysis = "A veces te atreves, a veces te escondes. Tu próxima meta es convertir esos momentos de duda en momentos de acción.";
+                profile = gameData.profiles.transition.title;
+                analysis = gameData.profiles.transition.analysis;
             }
 
             document.getElementById('final-name-title').innerText = `INFORME: ${state.name.toUpperCase()}`;
@@ -666,17 +674,16 @@
             }
             loop();
 
-            c.onmousedown = (e) => {
+            const handleHit = (clientX, clientY) => {
                 const r = c.getBoundingClientRect();
-                // Better coordinate mapping
                 const scaleX = c.width / r.width;
                 const scaleY = c.height / r.height;
-                const mx = (e.clientX - r.left) * scaleX;
-                const my = (e.clientY - r.top) * scaleY;
+                const mx = (clientX - r.left) * scaleX;
+                const my = (clientY - r.top) * scaleY;
 
                 for (let i = items.length - 1; i >= 0; i--) {
                     let it = items[i];
-                    if (Math.hypot(mx - it.x, my - it.y) < 45) { // Radius 45 hit forgiveness
+                    if (Math.hypot(mx - it.x, my - it.y) < 45) {
                         if (it.isBomb) {
                             mLives = 0; updateMGHeader(); items.splice(i, 1);
                             c.style.backgroundColor = "rgba(255,0,0,0.3)"; setTimeout(() => c.style.backgroundColor = "transparent", 100);
@@ -688,7 +695,13 @@
                         break;
                     }
                 }
-            }
+            };
+
+            c.onmousedown = (e) => handleHit(e.clientX, e.clientY);
+            c.ontouchstart = (e) => {
+                e.preventDefault();
+                handleHit(e.touches[0].clientX, e.touches[0].clientY);
+            };
         }
 
         function initMaze() {
@@ -709,16 +722,35 @@
             const getPos = (e) => {
                 const r = c.getBoundingClientRect();
                 return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) };
-            }
+            };
 
-            c.onmousedown = (e) => { const p = getPos(e); if (Math.hypot(p.x - ballX, p.y - ballY) < 25) dragging = true; }
-            window.onmousemove = (e) => {
+            const handleMove = (e) => {
                 if (!dragging) return;
-                const p = getPos(e); ballX = p.x; ballY = p.y;
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const p = getPos({ clientX, clientY });
+                ballX = p.x; ballY = p.y;
                 if (!track2.some(t => p.x > t.x && p.x < t.x + t.w && p.y > t.y && p.y < t.y + t.h)) { dragging = false; ballX = 60; ballY = 60; endMinigame(false); }
                 if (Math.hypot(p.x - goal.x, p.y - goal.y) < 20) { dragging = false; endMinigame(true, 15); }
-            }
-            window.onmouseup = () => { dragging = false; if (Math.hypot(ballX - goal.x, ballY - goal.y) > 20) { ballX = 60; ballY = 60; } }
+            };
+
+            const handleStart = (e) => {
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const p = getPos({ clientX, clientY });
+                if (Math.hypot(p.x - ballX, p.y - ballY) < 30) dragging = true;
+            };
+
+            const handleEnd = () => { dragging = false; if (Math.hypot(ballX - goal.x, ballY - goal.y) > 20) { ballX = 60; ballY = 60; } };
+
+            c.onmousedown = handleStart;
+            c.ontouchstart = handleStart;
+            window.onmousemove = handleMove;
+            window.ontouchmove = handleMove;
+            window.onmouseup = handleEnd;
+            window.ontouchend = handleEnd;
         }
 
         function initMemory() {
@@ -749,8 +781,22 @@
 
         function initWord() {
             const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
-            const words = ['PERSISTENCIA', 'ESTRATEGIA', 'COMMUNITY', 'ALGORITMO', 'CREATIVIDAD']; currentWord = words[Math.floor(Math.random() * words.length)];
-            d.innerHTML = `<h3 style="margin-bottom:20px;">ORDENA: <span style="color:var(--cyan); letter-spacing:5px;">${currentWord.split('').sort(() => Math.random() - 0.5).join('')}</span></h3><input type="text" id="winin" class="game-input">`;
+            const words = ['PODER', 'META', 'IDEAS', 'LOGRO', 'CAMBIO', 'VALOR', 'PREGUNTAR', 'PROCESO', 'MENTE', 'ESFUERZO']; currentWord = words[Math.floor(Math.random() * words.length)];
+            // Soft Scramble: Keep first or last char fixed if word is short, or just swap a few
+            let scrambled = currentWord.split('');
+            if (scrambled.length > 3) {
+                // Shuffle but ensure it's not the same word
+                for (let i = scrambled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [scrambled[i], scrambled[j]] = [scrambled[j], scrambled[i]];
+                }
+                if (scrambled.join('') === currentWord) { // Simple fix if it didn't scramble
+                    [scrambled[0], scrambled[1]] = [scrambled[1], scrambled[0]];
+                }
+            } else {
+                scrambled.reverse(); // For very short words like 'AUN' (if I added them) or 'META' (4 chars)
+            }
+            d.innerHTML = `<h3 style="margin-bottom:20px;">ORDENA: <span style="color:var(--cyan); letter-spacing:5px;">${scrambled.join('')}</span></h3><input type="text" id="winin" class="game-input">`;
             const ipt = document.getElementById('winin'); ipt.focus(); ipt.oninput = () => { if (ipt.value.toUpperCase() === currentWord) endMinigame(true, 15); }
         }
 
@@ -772,22 +818,146 @@
 
         function initNeuro() {
             const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
-            const cols = ['var(--cyan)', 'var(--pink)', 'var(--green)', 'var(--yellow)'];
-            let seq = []; for (let i = 0; i < 5; i++) seq.push(Math.floor(Math.random() * 4)); let uSeq = [];
-            d.innerHTML = `<h3>MEMORIZA LA SECUENCIA:</h3><div id="nbox" style="width:100%;height:80px;border-radius:10px;margin:20px 0;border:2px solid #fff;"></div><div id="nbtns" style="display:flex;gap:5px;"></div>`;
-            let i = 0; let iv = setInterval(() => { const box = document.getElementById('nbox'); if (box) { box.style.backgroundColor = cols[seq[i]]; setTimeout(() => box.style.backgroundColor = 'transparent', 400); i++; if (i >= 5) { clearInterval(iv); enable(); } } }, 600);
+            const emojis = ['🚀', '🔥', '💎', '⚡'];
+            let seq = []; for (let i = 0; i < 4; i++) seq.push(Math.floor(Math.random() * 4)); let uSeq = [];
+            d.innerHTML = `<h3>MEMORIZA LA SECUENCIA:</h3><div id="nbox" style="width:100%;height:100px;border-radius:10px;margin:20px 0;border:2px solid #fff;display:flex;justify-content:center;align-items:center;font-size:3.5rem;"></div><div id="nbtns" style="display:flex;gap:5px;"></div>`;
+            let i = 0;
+            let iv = setInterval(() => {
+                const box = document.getElementById('nbox');
+                if (box) {
+                    box.innerText = emojis[seq[i]];
+                    setTimeout(() => box.innerText = '', 500);
+                    i++;
+                    if (i >= 4) {
+                        clearInterval(iv);
+                        setTimeout(() => enable(), 600); // Wait before showing buttons
+                    }
+                }
+            }, 1000);
             function enable() {
                 const ctr = document.getElementById('nbtns'); ctr.innerHTML = '';
-                cols.forEach((c, idx) => {
-                    const b = document.createElement('button'); b.className = 'btn'; b.style.borderColor = c; b.style.flex = "1"; b.style.height = "60px"; b.style.background = c; b.style.opacity = "0.3";
-                    b.onmousedown = () => { b.style.opacity = "1"; }; b.onmouseup = () => { b.style.opacity = "0.3"; check(idx); };
+                emojis.forEach((em, idx) => {
+                    const b = document.createElement('button'); b.className = 'btn'; b.style.flex = "1"; b.style.height = "70px"; b.style.fontSize = "2rem"; b.innerText = em; b.style.touchAction = "none";
+                    b.onpointerdown = () => { b.style.background = "rgba(255,255,255,0.2)"; }; b.onpointerup = () => { b.style.background = "transparent"; check(idx); };
+                    b.onpointerleave = () => { b.style.background = "transparent"; };
                     ctr.appendChild(b);
                 });
             }
             function check(idx) {
-                if (idx !== seq[uSeq.length]) { endMinigame(false); }
-                else { uSeq.push(idx); if (uSeq.length === 5) endMinigame(true, 20); }
+                uSeq.push(idx);
+                if (idx !== seq[uSeq.length - 1]) {
+                    // Fail feedback: Show comparison
+                    const box = document.getElementById('nbox');
+                    box.style.fontSize = "1.2rem";
+                    box.style.flexDirection = "column";
+                    box.innerHTML = `<span style="color:var(--red)">Tu: ${uSeq.map(x => emojis[x]).join(' ')}</span>
+                                     <span style="color:var(--green)">Era: ${seq.map(x => emojis[x]).join(' ')}</span>`;
+                    setTimeout(() => endMinigame(false), 2500);
+                } else {
+                    if (uSeq.length === 4) endMinigame(true, 20);
+                }
             }
+        }
+
+        function initSearch() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
+            d.innerHTML = '<h3>ENCUENTRA EL INTRUSO:</h3><div class="memory-grid" id="sgrid"></div>';
+            const pack = ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍', '🥝', '🍋', '🍑', '🍐'];
+            const base = pack[Math.floor(Math.random() * pack.length)];
+            let others = pack.filter(x => x !== base);
+            const intruder = others[Math.floor(Math.random() * others.length)];
+            let cards = Array(15).fill(base); cards.push(intruder);
+            cards.sort(() => Math.random() - 0.5);
+            cards.forEach(e => {
+                const c = document.createElement('div'); c.className = 'mem-card'; c.innerText = e;
+                c.style.fontSize = "2.5rem";
+                c.onclick = () => { if (e === intruder) endMinigame(true, 15); else endMinigame(false); };
+                document.getElementById('sgrid').appendChild(c);
+            });
+        }
+
+        function initMath() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
+            let count = 0;
+            const next = () => {
+                count++; if (count > 3) { endMinigame(true, 15); return; }
+                const a = Math.floor(Math.random() * 15) + 1; const b = Math.floor(Math.random() * 15) + 1;
+                const op = Math.random() > 0.5 ? '+' : '-';
+                const ans = op === '+' ? a + b : a - b;
+                d.innerHTML = `<h3>RESOLVER (${count}/3):</h3><div style="font-size:3rem; margin:20px 0;">${a} ${op} ${b} = ?</div><input type="number" id="math-in" class="game-input" pattern="[0-9]*" inputmode="numeric">`;
+                const ipt = document.getElementById('math-in'); ipt.focus();
+                ipt.oninput = () => { if (parseInt(ipt.value) === ans) next(); };
+            };
+            next();
+        }
+
+        function initReaction() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
+            d.innerHTML = '<div id="react-box" style="width:100%; height:300px; background:var(--red); border-radius:15px; display:flex; justify-content:center; align-items:center; font-size:1.5rem; font-weight:bold; cursor:pointer;">ESPERA...</div>';
+            const box = document.getElementById('react-box');
+            let ready = false; let start = 0;
+            let tout = setTimeout(() => {
+                ready = true; box.style.background = "var(--green)"; box.innerText = "¡YA! TOCA AQUÍ"; start = Date.now();
+            }, 2000 + Math.random() * 3000);
+
+            const handle = () => {
+                if (!ready) { clearTimeout(tout); endMinigame(false); }
+                else {
+                    const diff = (Date.now() - start) / 1000;
+                    if (diff < 0.5) endMinigame(true, 20); // 500ms limit
+                    else endMinigame(false);
+                }
+            };
+            box.onmousedown = (e) => { e.preventDefault(); handle(); };
+            box.ontouchstart = (e) => { e.preventDefault(); handle(); };
+        }
+
+        function initCollector() {
+            const c = document.getElementById('canvas-game'); c.style.display = 'block'; const ctx = c.getContext('2d');
+            c.width = 400; c.height = 500;
+            let basketX = 170; let items = []; let stars = 0;
+
+            // Instructions
+            ctx.fillStyle = "#fff";
+            ctx.font = "14px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Mueve el mouse/dedo para mover el recolector", 200, 20);
+
+            function loop() {
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                // Instructions
+                ctx.fillStyle = "#888";
+                ctx.font = "12px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Atrapa ⭐ | Evita ☄️", 200, 15);
+
+                // Draw Basket
+                ctx.fillStyle = "var(--cyan)"; ctx.fillRect(basketX, 450, 60, 20);
+                // Spawn - REDUCED from 0.04 to 0.02
+                if (Math.random() < 0.025) {
+                    const isBad = Math.random() < 0.25; // Back to 25%
+                    items.push({ x: Math.random() * 370, y: -20, isBad, icon: isBad ? '☄️' : '⭐', speed: 2 + Math.random() * 2 }); // Reduced speed
+                }
+                for (let i = items.length - 1; i >= 0; i--) {
+                    let it = items[i]; it.y += it.speed;
+                    ctx.font = "30px Arial"; ctx.textAlign = "center"; ctx.fillText(it.icon, it.x + 15, it.y);
+                    // Catch
+                    if (it.y > 450 && it.y < 480 && it.x > basketX - 20 && it.x < basketX + 60) {
+                        if (it.isBad) { endMinigame(false); return; }
+                        else { stars++; items.splice(i, 1); if (stars >= 10) { endMinigame(true, 15); return; } }
+                    } else if (it.y > 520) items.splice(i, 1);
+                }
+                mgAnim = requestAnimationFrame(loop);
+            }
+            loop();
+            const handle = (clientX) => {
+                const r = c.getBoundingClientRect();
+                basketX = (clientX - r.left) * (c.width / r.width) - 30;
+                if (basketX < 0) basketX = 0; if (basketX > 340) basketX = 340;
+            };
+            c.onmousemove = (e) => handle(e.clientX);
+            c.ontouchmove = (e) => { e.preventDefault(); handle(e.touches[0].clientX); };
         }
     </script>
 </body>

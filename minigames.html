@@ -3,82 +3,133 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Minigame Lab - Noob to Viral</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Minijuegos - Noob to Viral</title>
     <style>
+        :root {
+            --cyan: #00f2ff;
+            --green: #39ff14;
+            --red: #ff3131;
+            --pink: #ff006e;
+            --yellow: #fff200;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: #0b0e14;
+            background: linear-gradient(135deg, #0b0e14 0%, #161b22 100%);
             color: #e6edf3;
-            font-family: sans-serif;
-            display: flex;
-            gap: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
             padding: 20px;
         }
 
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--cyan);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
         #menu {
-            width: 250px;
             background: #161b22;
             padding: 20px;
             border-radius: 12px;
             height: fit-content;
+            border: 2px solid #30363d;
         }
 
-        #game-boundary {
-            flex-grow: 1;
-            max-width: 500px;
-            height: 600px;
+        #menu h2 {
+            color: var(--yellow);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #21262d;
+            color: var(--cyan);
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .menu-btn:hover {
+            background: #30363d;
+            transform: translateX(5px);
+        }
+
+        .menu-btn.active {
+            background: var(--cyan);
+            color: #0b0e14;
+            font-weight: bold;
+        }
+
+        #game-area {
             background: #161b22;
             border: 2px solid #30363d;
             border-radius: 12px;
-            position: relative;
-            overflow: hidden;
+            padding: 20px;
+            min-height: 600px;
             display: flex;
             flex-direction: column;
         }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 5px;
-            cursor: pointer;
-            background: #21262d;
-            color: var(--cyan, #00f2ff);
-            border: 1px solid #30363d;
+        #header {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
         }
 
-        button:hover {
-            background: #30363d;
-        }
-
-        .minigame-layer {
+        #game-container {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 100%;
             position: relative;
         }
 
         canvas {
-            width: 100%;
-            height: 100%;
+            max-width: 100%;
+            border-radius: 8px;
         }
 
-        /* Copy styles from main game */
-        :root {
-            --cyan: #00f2ff;
-            --green: #39ff14;
-            --red: #ff3131;
+        #dom-game-wrap {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
         }
 
         .game-input {
             width: 100%;
             padding: 15px;
             background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--cyan);
+            border: 2px solid var(--cyan);
             border-radius: 8px;
             color: #fff;
-            font-size: 1rem;
+            font-size: 1.2rem;
             text-align: center;
         }
 
@@ -87,222 +138,644 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             width: 100%;
-            max-width: 350px;
-            aspect-ratio: 1;
-            margin: 0 auto;
+            max-width: 400px;
+            margin: 20px auto;
         }
 
         .mem-card {
+            aspect-ratio: 1;
             background: #30363d;
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 2rem;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .mem-card:hover {
+            transform: scale(1.05);
         }
 
         .sort-item {
             padding: 15px;
             background: #30363d;
-            border: 1px solid #444;
+            border: 2px solid #444;
             border-radius: 8px;
             text-align: center;
             cursor: pointer;
             font-weight: bold;
-            margin-bottom: 5px;
-            width: 100%;
+            margin-bottom: 8px;
+            transition: all 0.2s;
         }
 
-        #header {
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
+        .sort-item:hover {
+            background: #444;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: #21262d;
+            color: var(--cyan);
+            border: 2px solid var(--cyan);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--cyan);
+            color: #0b0e14;
+        }
+
+        #result-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            border-radius: 8px;
+        }
+
+        #result-overlay h2 {
+            font-size: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div id="menu">
-        <h3>Minigame Lab</h3>
-        <button onclick="play('clicker')">Clicker (Reflejos)</button>
-        <button onclick="play('maze')">Laberinto</button>
-        <button onclick="play('memory')">Memotest 4x4</button>
-        <button onclick="play('word')">Palabra</button>
-        <button onclick="play('sorter')">Ordenador</button>
-        <button onclick="play('neuro')">Neuro-Patrón</button>
-    </div>
-    <div id="game-boundary">
-        <div id="header">
-            <span id="timer">0</span>
-            <span id="score">0</span>
+    <div class="container">
+        <h1>🎮 Laboratorio de Minijuegos</h1>
+
+        <div id="menu">
+            <h2>Selecciona un juego:</h2>
+            <button class="menu-btn" onclick="play('clicker')">1. Reflejos Rápidos</button>
+            <button class="menu-btn" onclick="play('maze')">2. Laberinto</button>
+            <button class="menu-btn" onclick="play('memory')">3. Memotest 4x4</button>
+            <button class="menu-btn" onclick="play('word')">4. Decodificador</button>
+            <button class="menu-btn" onclick="play('sorter')">5. Ordenador Lógico</button>
+            <button class="menu-btn" onclick="play('neuro')">6. Neuro-Patrón</button>
+            <button class="menu-btn" onclick="play('search')">7. Caza del Intruso</button>
+            <button class="menu-btn" onclick="play('math')">8. Cálculo Rápido</button>
+            <button class="menu-btn" onclick="play('reaction')">9. Reflejo Puro</button>
+            <button class="menu-btn" onclick="play('collector')">10. Recolector</button>
         </div>
-        <div class="minigame-layer">
-            <canvas id="canvas-game" style="display:none"></canvas>
-            <div id="dom-game-wrap" style="width:100%; padding:20px; display:none;"></div>
-            <div id="result-overlay"
-                style="position: absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; flex-direction:column;">
-                <h1 id="res-title"></h1>
-                <button style="width:100px"
-                    onclick="document.getElementById('result-overlay').style.display='none'">OK</button>
+
+        <div id="game-area">
+            <div id="header">
+                <span>⏱️ Tiempo: <span id="timer">0</span>s</span>
+                <span>📊 Puntos: <span id="score">0</span></span>
+            </div>
+            <div id="game-container">
+                <canvas id="canvas-game" style="display:none"></canvas>
+                <div id="dom-game-wrap" style="display:none"></div>
+                <div id="result-overlay">
+                    <h2 id="result-title">RESULTADO</h2>
+                    <button class="btn" onclick="hideResult()">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Minimal logic port
-        let mgInt, mgAnim, mScore = 0, mTimer = 0, mLives = 3, currentWord = "";
-        // Mock icons
-        const icons = ['🎮', '🖱️', '⌨️', '🎧', '🏆'];
+        let mgInt, mgAnim, mScore = 0, mTimer = 0, mLives = 3, currentWord = "", currentGameId = "";
 
         function updateHeader() {
-            let t = document.getElementById('timer');
-            let s = document.getElementById('score');
-            t.innerText = mTimer;
-
-            // Hardcoded logic to match index.html update
-            // We don't have state.currentMG.id easily here without more refactoring, 
-            // but we can infer or simpler: just show general stats.
-            // Actually, let's just show "Playing" or specific counts.
-            // For simplicity in the lab, I'll stick to a generic status or just what's relevant.
-
-            s.innerText = `Puntos/Vida: ${mScore}/${mLives}`;
+            document.getElementById('timer').innerText = mTimer;
+            document.getElementById('score').innerText = mScore;
         }
-        function end(win) {
-            clearInterval(mgInt); if (mgAnim) cancelAnimationFrame(mgAnim);
+
+        function endGame(win) {
+            clearInterval(mgInt);
+            if (mgAnim) cancelAnimationFrame(mgAnim);
             document.getElementById('result-overlay').style.display = 'flex';
-            document.getElementById('res-title').innerText = win ? "WIN" : "LOSS";
-            document.getElementById('res-title').style.color = win ? "lime" : "red";
+            document.getElementById('result-title').innerText = win ? "✅ ¡VICTORIA!" : "❌ FALLASTE";
+            document.getElementById('result-title').style.color = win ? "var(--green)" : "var(--red)";
         }
 
-        function play(imgId) {
-            clearInterval(mgInt); if (mgAnim) cancelAnimationFrame(mgAnim);
+        function hideResult() {
+            document.getElementById('result-overlay').style.display = 'none';
+        }
+
+        function play(gameId) {
+            // Reset
+            clearInterval(mgInt);
+            if (mgAnim) cancelAnimationFrame(mgAnim);
             document.getElementById('canvas-game').style.display = 'none';
             document.getElementById('dom-game-wrap').style.display = 'none';
-            document.getElementById('result-overlay').style.display = 'none';
-            mScore = 0; mLives = 3;
+            hideResult();
+            mScore = 0;
+            mLives = 3;
+            currentGameId = gameId;
 
-            switch (imgId) {
+            // Highlight active button
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Start game
+            switch (gameId) {
                 case 'clicker': mTimer = 15; initClicker(); break;
                 case 'maze': mTimer = 20; initMaze(); break;
                 case 'memory': mTimer = 30; initMemory(); break;
                 case 'word': mTimer = 15; initWord(); break;
                 case 'sorter': mTimer = 15; initSorter(); break;
                 case 'neuro': mTimer = 25; initNeuro(); break;
+                case 'search': mTimer = 10; initSearch(); break;
+                case 'math': mTimer = 15; initMath(); break;
+                case 'reaction': mTimer = 10; initReaction(); break;
+                case 'collector': mTimer = 20; initCollector(); break;
             }
-            currentGameId = imgId;
+
             mgInt = setInterval(() => {
-                mTimer--; updateHeader();
-                if (mTimer <= 0) {
-                    if (currentGameId === 'word') {
-                        const i = document.getElementById('wi');
-                        if (i) { i.value = currentWord; i.style.color = "red"; }
-                        setTimeout(() => end(false), 2000);
-                        clearInterval(mgInt);
-                    } else {
-                        end(false);
-                    }
-                }
+                mTimer--;
+                updateHeader();
+                if (mTimer <= 0) endGame(false);
             }, 1000);
             updateHeader();
         }
 
-        // --- Engines Copied & Minimized ---
+        // ===== MINIGAME IMPLEMENTATIONS =====
+
         function initClicker() {
-            const c = document.getElementById('canvas-game'); c.style.display = 'block'; const ctx = c.getContext('2d');
-            c.width = 500; c.height = 550; // Adjusted for lab
+            const c = document.getElementById('canvas-game');
+            c.style.display = 'block';
+            const ctx = c.getContext('2d');
+            c.width = 400;
+            c.height = 500;
             let items = [];
+
             function loop() {
                 ctx.clearRect(0, 0, c.width, c.height);
                 if (Math.random() < 0.015 && items.length < 3) {
-                    const isBomb = Math.random() < 0.25; items.push({ x: Math.random() * 400 + 50, y: Math.random() * 450 + 50, icon: isBomb ? '💣' : '🎮', isBomb: isBomb, life: 240, ml: 240, s: 0 });
+                    const isBomb = Math.random() < 0.25;
+                    items.push({
+                        x: Math.random() * 320 + 40,
+                        y: Math.random() * 420 + 40,
+                        icon: isBomb ? '💣' : '🎮',
+                        isBomb: isBomb,
+                        life: 240,
+                        maxLife: 240,
+                        scale: 0
+                    });
                 }
                 for (let i = items.length - 1; i >= 0; i--) {
-                    let it = items[i]; it.life--; it.s = it.life > 220 ? (240 - it.life) / 20 : it.life < 20 ? it.life / 20 : 1;
-                    ctx.save(); ctx.translate(it.x, it.y); ctx.scale(it.s, it.s); ctx.font = "40px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(it.icon, 0, 0);
-                    ctx.fillStyle = it.isBomb ? "red" : "lime"; ctx.fillRect(-20, 30, 40 * (it.life / it.ml), 4); ctx.restore();
+                    let it = items[i];
+                    it.life--;
+                    if (it.life > 220) it.scale = (240 - it.life) / 20;
+                    else if (it.life < 20) it.scale = it.life / 20;
+                    else it.scale = 1;
+
+                    ctx.save();
+                    ctx.translate(it.x, it.y);
+                    ctx.scale(it.scale, it.scale);
+                    ctx.font = "45px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(it.icon, 0, 0);
+                    ctx.fillStyle = it.isBomb ? "red" : "lime";
+                    ctx.fillRect(-20, 30, 40 * (it.life / it.maxLife), 4);
+                    ctx.restore();
+
                     if (it.life <= 0) items.splice(i, 1);
                 }
                 mgAnim = requestAnimationFrame(loop);
             }
             loop();
-            c.onmousedown = (e) => {
-                const r = c.getBoundingClientRect(); const sx = c.width / r.width; const sy = c.height / r.height;
-                const mx = (e.clientX - r.left) * sx; const my = (e.clientY - r.top) * sy;
+
+            const handleHit = (clientX, clientY) => {
+                const r = c.getBoundingClientRect();
+                const scaleX = c.width / r.width;
+                const scaleY = c.height / r.height;
+                const mx = (clientX - r.left) * scaleX;
+                const my = (clientY - r.top) * scaleY;
+
                 for (let i = items.length - 1; i >= 0; i--) {
-                    if (Math.hypot(mx - items[i].x, my - items[i].y) < 45) {
-                        if (items[i].isBomb) { mLives = 0; updateHeader(); items.splice(i, 1); end(false); }
-                        else { mScore++; updateHeader(); items.splice(i, 1); if (mScore >= 10) end(true); }
+                    let it = items[i];
+                    if (Math.hypot(mx - it.x, my - it.y) < 45) {
+                        if (it.isBomb) {
+                            endGame(false);
+                        } else {
+                            mScore++;
+                            updateHeader();
+                            items.splice(i, 1);
+                            if (mScore >= 10) endGame(true);
+                        }
                         break;
                     }
+                }
+            };
+
+            c.onmousedown = (e) => handleHit(e.clientX, e.clientY);
+            c.ontouchstart = (e) => {
+                e.preventDefault();
+                handleHit(e.touches[0].clientX, e.touches[0].clientY);
+            };
+        }
+
+        function initMaze() {
+            const c = document.getElementById('canvas-game');
+            c.style.display = 'block';
+            const ctx = c.getContext('2d');
+            c.width = 400;
+            c.height = 500;
+            let dragging = false;
+            let ballX = 60, ballY = 60;
+            const track = [
+                { x: 30, y: 30, w: 80, h: 100 },
+                { x: 30, y: 100, w: 50, h: 350 },
+                { x: 30, y: 400, w: 340, h: 50 },
+                { x: 320, y: 150, w: 50, h: 300 },
+                { x: 150, y: 150, w: 220, h: 50 },
+                { x: 150, y: 150, w: 50, h: 150 }
+            ];
+            const goal = { x: 175, y: 275 };
+
+            function draw() {
+                ctx.fillStyle = "#ff3131";
+                ctx.fillRect(0, 0, 400, 500);
+                ctx.fillStyle = "#00f2ff";
+                track.forEach(t => ctx.fillRect(t.x, t.y, t.w, t.h));
+                ctx.fillStyle = "#fff";
+                ctx.beginPath();
+                ctx.arc(60, 60, 15, 0, 7);
+                ctx.fill();
+                ctx.fillStyle = "#fff200";
+                ctx.beginPath();
+                ctx.arc(goal.x, goal.y, 20, 0, 7);
+                ctx.fill();
+                ctx.fillStyle = "#39ff14";
+                ctx.beginPath();
+                ctx.arc(ballX, ballY, 12, 0, 7);
+                ctx.fill();
+                mgAnim = requestAnimationFrame(draw);
+            }
+            draw();
+
+            const getPos = (e) => {
+                const r = c.getBoundingClientRect();
+                return {
+                    x: (e.clientX - r.left) * (c.width / r.width),
+                    y: (e.clientY - r.top) * (c.height / r.height)
+                };
+            };
+
+            const handleMove = (e) => {
+                if (!dragging) return;
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const p = getPos({ clientX, clientY });
+                ballX = p.x;
+                ballY = p.y;
+                if (!track.some(t => p.x > t.x && p.x < t.x + t.w && p.y > t.y && p.y < t.y + t.h)) {
+                    dragging = false;
+                    ballX = 60;
+                    ballY = 60;
+                    endGame(false);
+                }
+                if (Math.hypot(p.x - goal.x, p.y - goal.y) < 20) {
+                    dragging = false;
+                    endGame(true);
+                }
+            };
+
+            const handleStart = (e) => {
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const p = getPos({ clientX, clientY });
+                if (Math.hypot(p.x - ballX, p.y - ballY) < 30) dragging = true;
+            };
+
+            const handleEnd = () => {
+                dragging = false;
+                if (Math.hypot(ballX - goal.x, ballY - goal.y) > 20) {
+                    ballX = 60;
+                    ballY = 60;
+                }
+            };
+
+            c.onmousedown = handleStart;
+            c.ontouchstart = handleStart;
+            window.onmousemove = handleMove;
+            window.ontouchmove = handleMove;
+            window.onmouseup = handleEnd;
+            window.ontouchend = handleEnd;
+        }
+
+        function initMemory() {
+            const d = document.getElementById('dom-game-wrap');
+            d.style.display = 'block';
+            d.innerHTML = '<h3 style="text-align:center; margin-bottom:20px;">Encuentra las 8 parejas</h3><div class="memory-grid" id="mg"></div>';
+            const base = ['🎮', '🖱️', '🎧', '⌨️', '🏆', '👾', '🕹️', '🔋'];
+            let cards = [...base, ...base].sort(() => Math.random() - 0.5);
+            let flipped = [];
+            let matches = 0;
+
+            cards.forEach(emoji => {
+                let el = document.createElement('div');
+                el.className = 'mem-card';
+                el.onclick = () => {
+                    if (flipped.length < 2 && !el.innerText && !el.classList.contains('matched')) {
+                        el.innerText = emoji;
+                        flipped.push(el);
+                        if (flipped.length === 2) {
+                            if (flipped[0].innerText === flipped[1].innerText) {
+                                matches++;
+                                flipped[0].classList.add('matched');
+                                flipped[1].classList.add('matched');
+                                flipped = [];
+                                if (matches === 8) endGame(true);
+                            } else {
+                                setTimeout(() => {
+                                    flipped[0].innerText = '';
+                                    flipped[1].innerText = '';
+                                    flipped = [];
+                                }, 600);
+                            }
+                        }
+                    }
+                };
+                document.getElementById('mg').appendChild(el);
+            });
+        }
+
+        function initWord() {
+            const d = document.getElementById('dom-game-wrap');
+            d.style.display = 'block';
+            const words = ['PODER', 'META', 'IDEAS', 'LOGRO', 'CAMBIO', 'VALOR', 'PREGUNTAR', 'PROCESO', 'MENTE', 'ESFUERZO'];
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            let scrambled = currentWord.split('');
+            if (scrambled.length > 3) {
+                for (let i = scrambled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [scrambled[i], scrambled[j]] = [scrambled[j], scrambled[i]];
+                }
+                if (scrambled.join('') === currentWord) {
+                    [scrambled[0], scrambled[1]] = [scrambled[1], scrambled[0]];
+                }
+            } else {
+                scrambled.reverse();
+            }
+            d.innerHTML = `<h3 style="margin-bottom:20px;">ORDENA: <span style="color:var(--cyan); letter-spacing:5px;">${scrambled.join('')}</span></h3><input type="text" id="winin" class="game-input">`;
+            const ipt = document.getElementById('winin');
+            ipt.focus();
+            ipt.oninput = () => {
+                if (ipt.value.toUpperCase() === currentWord) endGame(true);
+            };
+        }
+
+        function initSorter() {
+            const d = document.getElementById('dom-game-wrap');
+            d.style.display = 'block';
+            let nums = [10, 25, 50, 75, 99].sort((a, b) => a - b);
+            let shuffled = [...nums].sort(() => Math.random() - 0.5);
+            d.innerHTML = '<h3 style="text-align:center; margin-bottom:20px;">Ordena de MENOR a MAYOR</h3><div id="sc"></div>';
+            shuffled.forEach(x => {
+                let b = document.createElement('div');
+                b.className = 'sort-item';
+                b.innerText = x;
+                b.onclick = () => {
+                    if (x === nums[0]) {
+                        nums.shift();
+                        b.style.background = 'var(--green)';
+                        b.style.color = '#000';
+                        if (!nums.length) endGame(true);
+                    } else {
+                        b.style.background = 'var(--red)';
+                        setTimeout(() => b.style.background = '#30363d', 300);
+                    }
+                };
+                document.getElementById('sc').appendChild(b);
+            });
+        }
+
+        function initNeuro() {
+            const d = document.getElementById('dom-game-wrap');
+            d.style.display = 'block';
+            const emojis = ['🚀', '🔥', '💎', '⚡'];
+            let seq = [];
+            for (let i = 0; i < 4; i++) seq.push(Math.floor(Math.random() * 4));
+            let uSeq = [];
+            d.innerHTML = `<h3>MEMORIZA LA SECUENCIA:</h3><div id="nbox" style="width:100%;height:100px;border-radius:10px;margin:20px 0;border:2px solid #fff;display:flex;justify-content:center;align-items:center;font-size:3.5rem;"></div><div id="nbtns" style="display:flex;gap:5px;"></div>`;
+            let i = 0;
+            let iv = setInterval(() => {
+                const box = document.getElementById('nbox');
+                if (box) {
+                    box.innerText = emojis[seq[i]];
+                    setTimeout(() => box.innerText = '', 500);
+                    i++;
+                    if (i >= 4) {
+                        clearInterval(iv);
+                        setTimeout(() => enable(), 600);
+                    }
+                }
+            }, 1000);
+
+            function enable() {
+                const ctr = document.getElementById('nbtns');
+                ctr.innerHTML = '';
+                emojis.forEach((em, idx) => {
+                    const b = document.createElement('button');
+                    b.className = 'btn';
+                    b.style.flex = "1";
+                    b.style.height = "70px";
+                    b.style.fontSize = "2rem";
+                    b.innerText = em;
+                    b.style.touchAction = "none";
+                    b.onpointerdown = () => {
+                        b.style.background = "rgba(255,255,255,0.2)";
+                    };
+                    b.onpointerup = () => {
+                        b.style.background = "transparent";
+                        check(idx);
+                    };
+                    b.onpointerleave = () => {
+                        b.style.background = "transparent";
+                    };
+                    ctr.appendChild(b);
+                });
+            }
+
+            function check(idx) {
+                uSeq.push(idx);
+                if (idx !== seq[uSeq.length - 1]) {
+                    const box = document.getElementById('nbox');
+                    box.style.fontSize = "1.2rem";
+                    box.style.flexDirection = "column";
+                    box.innerHTML = `<span style="color:var(--red)">Tu: ${uSeq.map(x => emojis[x]).join(' ')}</span>
+                                     <span style="color:var(--green)">Era: ${seq.map(x => emojis[x]).join(' ')}</span>`;
+                    setTimeout(() => endGame(false), 2500);
+                } else {
+                    if (uSeq.length === 4) endGame(true);
                 }
             }
         }
 
-        function initMemory() {
-            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block'; d.innerHTML = '<div class="memory-grid" id="mg"></div>';
-            // Need 8 pairs. 
-            const base = ['🎮', '🖱️', '🎧', '⌨️', '🏆', '👾', '🕹️', '🔋'];
-            let c = [...base, ...base].sort(() => Math.random() - 0.5); let f = [], m = 0;
-            c.forEach(e => {
-                let el = document.createElement('div'); el.className = 'mem-card'; el.onclick = () => {
-                    if (f.length < 2 && !el.innerText && !el.classList.contains('s')) {
-                        el.innerText = e; f.push(el);
-                        if (f.length === 2) {
-                            if (f[0].innerText === f[1].innerText) { m++; f[0].classList.add('s'); f[1].classList.add('s'); f = []; if (m === 8) end(true); }
-                            else { setTimeout(() => { f[0].innerText = ''; f[1].innerText = ''; f = [] }, 600); }
-                        }
-                    }
-                }; document.getElementById('mg').appendChild(el);
+        function initSearch() {
+            const d = document.getElementById('dom-game-wrap');
+            d.style.display = 'block';
+            d.innerHTML = '<h3 style="text-align:center; margin-bottom:20px;">ENCUENTRA EL INTRUSO:</h3><div class="memory-grid" id="sgrid"></div>';
+            const pack = ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍', '🥝', '🍋', '🍑', '🍐'];
+            const base = pack[Math.floor(Math.random() * pack.length)];
+            let others = pack.filter(x => x !== base);
+            const intruder = others[Math.floor(Math.random() * others.length)];
+            let cards = Array(15).fill(base);
+            cards.push(intruder);
+            cards.sort(() => Math.random() - 0.5);
+            cards.forEach(e => {
+                const c = document.createElement('div');
+                c.className = 'mem-card';
+                c.innerText = e;
+                c.style.fontSize = "2.5rem";
+                c.onclick = () => {
+                    if (e === intruder) endGame(true);
+                    else endGame(false);
+                };
+                document.getElementById('sgrid').appendChild(c);
             });
         }
 
-        // Add placeholders for others to save space, assuming clicker/mem were the complex ones asked for fix.
-        // Actually I should add them all for completeness of the "Lab".
-        function initMaze() {
-            const c = document.getElementById('canvas-game'); c.style.display = 'block'; const ctx = c.getContext('2d'); c.width = 500; c.height = 550;
-            let dragging = false, bx = 60, by = 60, goal = { x: 175, y: 275 };
-            const tr = [{ x: 30, y: 30, w: 80, h: 100 }, { x: 30, y: 100, w: 50, h: 350 }, { x: 30, y: 400, w: 340, h: 50 }, { x: 320, y: 150, w: 50, h: 300 }, { x: 150, y: 150, w: 220, h: 50 }, { x: 150, y: 150, w: 50, h: 150 }];
-            function dr() {
-                ctx.fillStyle = "#ff3131"; ctx.fillRect(0, 0, 500, 550); ctx.fillStyle = "#00f2ff"; tr.forEach(t => ctx.fillRect(t.x, t.y, t.w, t.h));
-                ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(60, 60, 15, 0, 7); ctx.fill(); ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(goal.x, goal.y, 20, 0, 7); ctx.fill();
-                ctx.fillStyle = "lime"; ctx.beginPath(); ctx.arc(bx, by, 12, 0, 7); ctx.fill(); mgAnim = requestAnimationFrame(dr);
+        function initMath() {
+            const d = document.getElementById('dom-game-wrap');
+            d.style.display = 'block';
+            let count = 0;
+            const next = () => {
+                count++;
+                if (count > 3) {
+                    endGame(true);
+                    return;
+                }
+                const a = Math.floor(Math.random() * 15) + 1;
+                const b = Math.floor(Math.random() * 15) + 1;
+                const op = Math.random() > 0.5 ? '+' : '-';
+                const ans = op === '+' ? a + b : a - b;
+                d.innerHTML = `<h3>RESOLVER (${count}/3):</h3><div style="font-size:3rem; margin:20px 0;">${a} ${op} ${b} = ?</div><input type="number" id="math-in" class="game-input" pattern="[0-9]*" inputmode="numeric">`;
+                const ipt = document.getElementById('math-in');
+                ipt.focus();
+                ipt.oninput = () => {
+                    if (parseInt(ipt.value) === ans) next();
+                };
+            };
+            next();
+        }
+
+        function initReaction() {
+            const d = document.getElementById('dom-game-wrap');
+            d.style.display = 'block';
+            d.innerHTML = '<div id="react-box" style="width:100%; height:300px; background:var(--red); border-radius:15px; display:flex; justify-content:center; align-items:center; font-size:1.5rem; font-weight:bold; cursor:pointer;">ESPERA...</div>';
+            const box = document.getElementById('react-box');
+            let ready = false;
+            let start = 0;
+            let tout = setTimeout(() => {
+                ready = true;
+                box.style.background = "var(--green)";
+                box.innerText = "¡YA! TOCA AQUÍ";
+                start = Date.now();
+            }, 2000 + Math.random() * 3000);
+
+            const handle = () => {
+                if (!ready) {
+                    clearTimeout(tout);
+                    endGame(false);
+                } else {
+                    const diff = (Date.now() - start) / 1000;
+                    if (diff < 0.5) endGame(true);
+                    else endGame(false);
+                }
+            };
+            box.onmousedown = (e) => {
+                e.preventDefault();
+                handle();
+            };
+            box.ontouchstart = (e) => {
+                e.preventDefault();
+                handle();
+            };
+        }
+
+        function initCollector() {
+            const c = document.getElementById('canvas-game');
+            c.style.display = 'block';
+            const ctx = c.getContext('2d');
+            c.width = 400;
+            c.height = 500;
+            let basketX = 170;
+            let items = [];
+            let stars = 0;
+
+            function loop() {
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                // Instructions
+                ctx.fillStyle = "#888";
+                ctx.font = "12px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Atrapa ⭐ | Evita ☄️", 200, 15);
+
+                ctx.fillStyle = "var(--cyan)";
+                ctx.fillRect(basketX, 450, 60, 20);
+                if (Math.random() < 0.025) {
+                    const isBad = Math.random() < 0.25;
+                    items.push({
+                        x: Math.random() * 370,
+                        y: -20,
+                        isBad,
+                        icon: isBad ? '☄️' : '⭐',
+                        speed: 2 + Math.random() * 2
+                    });
+                }
+                for (let i = items.length - 1; i >= 0; i--) {
+                    let it = items[i];
+                    it.y += it.speed;
+                    ctx.font = "30px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText(it.icon, it.x + 15, it.y);
+                    if (it.y > 450 && it.y < 480 && it.x > basketX - 20 && it.x < basketX + 60) {
+                        if (it.isBad) {
+                            endGame(false);
+                            return;
+                        } else {
+                            stars++;
+                            mScore = stars;
+                            updateHeader();
+                            items.splice(i, 1);
+                            if (stars >= 10) {
+                                endGame(true);
+                                return;
+                            }
+                        }
+                    } else if (it.y > 520) items.splice(i, 1);
+                }
+                mgAnim = requestAnimationFrame(loop);
             }
-            dr();
-            const gp = (e) => { const r = c.getBoundingClientRect(); return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) }; }
-            c.onmousedown = (e) => { if (Math.hypot(gp(e).x - bx, gp(e).y - by) < 25) dragging = true; }
-            window.onmousemove = (e) => { if (dragging) { const p = gp(e); bx = p.x; by = p.y; if (!tr.some(t => p.x > t.x && p.x < t.x + t.w && p.y > t.y && p.y < t.y + t.h)) { dragging = false; bx = 60; by = 60; end(false); } if (Math.hypot(p.x - goal.x, p.y - goal.y) < 20) end(true); } }
-            window.onmouseup = () => { dragging = false; }
-        }
-        function initWord() {
-            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block'; currentWord = "EJEMPLO";
-            d.innerHTML = `<h3>${currentWord}</h3><input id="wi" class="game-input">`;
-            document.getElementById('wi').oninput = (e) => { if (e.target.value.toUpperCase() === currentWord) end(true); }
-        }
-        function initSorter() {
-            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block'; let n = [10, 50, 99].sort((a, b) => a - b);
-            d.innerHTML = '<div id="sc"></div>';[...n].sort(() => Math.random() - 0.5).forEach(x => {
-                let b = document.createElement('div'); b.className = 'sort-item'; b.innerText = x;
-                b.onclick = () => { if (x === n[0]) { n.shift(); b.style.background = 'green'; if (!n.length) end(true); } else { b.style.background = 'red'; setTimeout(() => b.style.background = '#30363d', 200); } }
-                document.getElementById('sc').appendChild(b);
-            });
-        }
-        function initNeuro() {
-            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
-            let s = [0, 1, 2, 3], u = []; let c = ['cyan', 'pink', 'green', 'yellow'];
-            d.innerHTML = '<div id="nb" style="height:50px;width:100%;border:1px solid white"></div><div id="nbt" style="display:flex"></div>';
-            let i = 0; let iv = setInterval(() => { document.getElementById('nb').style.background = c[s[i]]; setTimeout(() => document.getElementById('nb').style.background = 'none', 200); i++; if (i >= 4) { clearInterval(iv); en(); } }, 500);
-            function en() {
-                c.forEach((cl, ix) => {
-                    let b = document.createElement('button'); b.style.background = cl; b.style.flex = 1; b.style.height = '50px';
-                    b.onmouseup = () => { if (ix !== s[u.length]) { end(false); } else { u.push(ix); if (u.length === 4) end(true); } }
-                    document.getElementById('nbt').appendChild(b);
-                })
-            }
+            loop();
+
+            const handle = (clientX) => {
+                const r = c.getBoundingClientRect();
+                basketX = (clientX - r.left) * (c.width / r.width) - 30;
+                if (basketX < 0) basketX = 0;
+                if (basketX > 340) basketX = 340;
+            };
+            c.onmousemove = (e) => handle(e.clientX);
+            c.ontouchmove = (e) => {
+                e.preventDefault();
+                handle(e.touches[0].clientX);
+            };
         }
     </script>
 </body>
