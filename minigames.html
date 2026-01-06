@@ -320,7 +320,7 @@
 
             function loop() {
                 ctx.clearRect(0, 0, c.width, c.height);
-                if (Math.random() < 0.015 && items.length < 3) {
+                if (Math.random() < 0.025 && items.length < 4) {
                     const isBomb = Math.random() < 0.25;
                     items.push({
                         x: Math.random() * 320 + 40,
@@ -630,13 +630,29 @@
             const d = document.getElementById('dom-game-wrap');
             d.style.display = 'block';
             d.innerHTML = '<h3 style="text-align:center; margin-bottom:20px;">ENCUENTRA EL INTRUSO:</h3><div class="memory-grid" id="sgrid"></div>';
-            const pack = ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍', '🥝', '🍋', '🍑', '🍐'];
-            const base = pack[Math.floor(Math.random() * pack.length)];
-            let others = pack.filter(x => x !== base);
-            const intruder = others[Math.floor(Math.random() * others.length)];
+
+            // Categories for thematic challenge
+            const categories = [
+                { name: 'animales', items: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯'] },
+                { name: 'frutas', items: ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍', '🥝', '🍋', '🍑', '🍐'] },
+                { name: 'verduras', items: ['🥕', '🥦', '🌽', '🥒', '🍅', '🥬', '🧄', '🧅', '🌶️', '🥔'] },
+                { name: 'objetos', items: ['⚽', '🏀', '🎾', '🏐', '🎱', '🏈', '⚾', '🥎', '🎳', '🏓'] }
+            ];
+
+            // Pick 2 different categories
+            const shuffled = [...categories].sort(() => Math.random() - 0.5);
+            const mainCat = shuffled[0];
+            const intruderCat = shuffled[1];
+
+            // Pick random items from each category
+            const base = mainCat.items[Math.floor(Math.random() * mainCat.items.length)];
+            const intruder = intruderCat.items[Math.floor(Math.random() * intruderCat.items.length)];
+
+            // Create grid: 15 base + 1 intruder = 16 total (4x4 grid)
             let cards = Array(15).fill(base);
             cards.push(intruder);
             cards.sort(() => Math.random() - 0.5);
+
             cards.forEach(e => {
                 const c = document.createElement('div');
                 c.className = 'mem-card';
@@ -663,8 +679,11 @@
                 const a = Math.floor(Math.random() * 15) + 1;
                 const b = Math.floor(Math.random() * 15) + 1;
                 const op = Math.random() > 0.5 ? '+' : '-';
-                const ans = op === '+' ? a + b : a - b;
-                d.innerHTML = `<h3>RESOLVER (${count}/3):</h3><div style="font-size:3rem; margin:20px 0;">${a} ${op} ${b} = ?</div><input type="number" id="math-in" class="game-input" pattern="[0-9]*" inputmode="numeric">`;
+                // Ensure positive result
+                let num1 = a, num2 = b;
+                if (op === '-' && b > a) { num1 = b; num2 = a; }
+                const ans = op === '+' ? num1 + num2 : num1 - num2;
+                d.innerHTML = `<h3>RESOLVER (${count}/3):</h3><div style="font-size:3rem; margin:20px 0;">${num1} ${op} ${num2} = ?</div><input type="number" id="math-in" class="game-input" pattern="[0-9]*" inputmode="numeric">`;
                 const ipt = document.getElementById('math-in');
                 ipt.focus();
                 ipt.oninput = () => {
@@ -693,11 +712,20 @@
                     clearTimeout(tout);
                     endGame(false);
                 } else {
-                    const diff = (Date.now() - start) / 1000;
-                    if (diff < 0.5) endGame(true);
+                    const diff = Date.now() - start;
+                    // Green screen only lasts 500ms
+                    if (diff <= 500) endGame(true);
                     else endGame(false);
                 }
             };
+            // Auto-fail after 500ms if not clicked
+            setTimeout(() => {
+                if (ready) {
+                    box.style.background = "var(--red)";
+                    box.innerText = "¡MUY LENTO!";
+                    setTimeout(() => endGame(false), 500);
+                }
+            }, 2000 + 3000 + 500); // max wait + max delay + 500ms window
             box.onmousedown = (e) => {
                 e.preventDefault();
                 handle();

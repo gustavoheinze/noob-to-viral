@@ -347,8 +347,8 @@
                     maxlength="20">
                 <p class="label-small">ELIGE TU CAMINO:</p>
                 <button class="btn" onclick="preStart('gaming')">🎮 PRO GAMER</button>
-                <button class="btn btn-pink" style="border-color:var(--pink);"
-                    onclick="preStart('social')">📱 CONTENT CREATOR</button>
+                <button class="btn btn-pink" style="border-color:var(--pink);" onclick="preStart('social')">📱 CONTENT
+                    CREATOR</button>
             </div>
         </div>
 
@@ -641,8 +641,8 @@
 
             function loop() {
                 ctx.clearRect(0, 0, c.width, c.height);
-                // Spawn Rate: 1.5% chance per frame, max 3 items. Easier.
-                if (Math.random() < 0.015 && items.length < 3) {
+                // Spawn Rate: 2.5% chance per frame, max 4 items. Better for mobile.
+                if (Math.random() < 0.025 && items.length < 4) {
                     const isBomb = Math.random() < 0.25;
                     items.push({
                         x: Math.random() * 320 + 40, y: Math.random() * 420 + 40,
@@ -862,12 +862,29 @@
         function initSearch() {
             const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
             d.innerHTML = '<h3>ENCUENTRA EL INTRUSO:</h3><div class="memory-grid" id="sgrid"></div>';
-            const pack = ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍', '🥝', '🍋', '🍑', '🍐'];
-            const base = pack[Math.floor(Math.random() * pack.length)];
-            let others = pack.filter(x => x !== base);
-            const intruder = others[Math.floor(Math.random() * others.length)];
-            let cards = Array(15).fill(base); cards.push(intruder);
+
+            // Categories for thematic challenge
+            const categories = [
+                { name: 'animales', items: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯'] },
+                { name: 'frutas', items: ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍', '🥝', '🍋', '🍑', '🍐'] },
+                { name: 'verduras', items: ['🥕', '🥦', '🌽', '🥒', '🍅', '🥬', '🧄', '🧅', '🌶️', '🥔'] },
+                { name: 'objetos', items: ['⚽', '🏀', '🎾', '🏐', '🎱', '🏈', '⚾', '🥎', '🎳', '🏓'] }
+            ];
+
+            // Pick 2 different categories
+            const shuffled = [...categories].sort(() => Math.random() - 0.5);
+            const mainCat = shuffled[0];
+            const intruderCat = shuffled[1];
+
+            // Pick random items from each category
+            const base = mainCat.items[Math.floor(Math.random() * mainCat.items.length)];
+            const intruder = intruderCat.items[Math.floor(Math.random() * intruderCat.items.length)];
+
+            // Create grid: 15 base + 1 intruder = 16 total (4x4 grid)
+            let cards = Array(15).fill(base);
+            cards.push(intruder);
             cards.sort(() => Math.random() - 0.5);
+
             cards.forEach(e => {
                 const c = document.createElement('div'); c.className = 'mem-card'; c.innerText = e;
                 c.style.fontSize = "2.5rem";
@@ -881,8 +898,10 @@
             let count = 0;
             const next = () => {
                 count++; if (count > 3) { endMinigame(true, 15); return; }
-                const a = Math.floor(Math.random() * 15) + 1; const b = Math.floor(Math.random() * 15) + 1;
+                let a = Math.floor(Math.random() * 15) + 1; let b = Math.floor(Math.random() * 15) + 1;
                 const op = Math.random() > 0.5 ? '+' : '-';
+                // Ensure positive result for subtraction
+                if (op === '-' && b > a) { [a, b] = [b, a]; }
                 const ans = op === '+' ? a + b : a - b;
                 d.innerHTML = `<h3>RESOLVER (${count}/3):</h3><div style="font-size:3rem; margin:20px 0;">${a} ${op} ${b} = ?</div><input type="number" id="math-in" class="game-input" pattern="[0-9]*" inputmode="numeric">`;
                 const ipt = document.getElementById('math-in'); ipt.focus();
@@ -903,11 +922,20 @@
             const handle = () => {
                 if (!ready) { clearTimeout(tout); endMinigame(false); }
                 else {
-                    const diff = (Date.now() - start) / 1000;
-                    if (diff < 0.5) endMinigame(true, 20); // 500ms limit
+                    const diff = Date.now() - start;
+                    // Green screen only lasts 500ms
+                    if (diff <= 500) endMinigame(true, 20);
                     else endMinigame(false);
                 }
             };
+            // Auto-fail after 500ms if not clicked
+            setTimeout(() => {
+                if (ready) {
+                    box.style.background = "var(--red)";
+                    box.innerText = "¡MUY LENTO!";
+                    setTimeout(() => endMinigame(false), 500);
+                }
+            }, 2000 + 3000 + 500); // max wait + max delay + 500ms window
             box.onmousedown = (e) => { e.preventDefault(); handle(); };
             box.ontouchstart = (e) => { e.preventDefault(); handle(); };
         }
