@@ -298,6 +298,27 @@
             color: var(--yellow);
             text-align: center;
         }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.2s ease-in-out 0s 2;
+            border-color: var(--red) !important;
+        }
     </style>
 </head>
 
@@ -430,7 +451,18 @@
         function showScreen(key) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('screen-' + key).classList.add('active'); }
 
         function preStart(p) {
-            state.name = document.getElementById('player-name-in').value.trim() || "Jugador";
+            const nameInput = document.getElementById('player-name-in');
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                nameInput.classList.remove('shake');
+                void nameInput.offsetWidth; // Trigger reflow
+                nameInput.classList.add('shake');
+                nameInput.placeholder = "¡EL NOMBRE ES OBLIGATORIO!";
+                return;
+            }
+
+            state.name = name;
             state.path = p;
             paths[p].scenarios.sort(() => Math.random() - 0.5); // Randomize Scenarios
             state.level = 0; state.skill = 10; state.history = []; state.mgPerformance = [];
