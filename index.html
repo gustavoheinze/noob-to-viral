@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noob to Viral - Ultimate Edition</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --card: #161b22;
+            --cyan: #00f2ff;
+            --pink: #ff00ea;
+            --green: #39ff14;
+            --yellow: #fff200;
+            --red: #ff3131;
+            --text: #e6edf3;
+            --font: 'Outfit', 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-boundary {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 850px;
+            background: var(--card);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #30363d;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 24px;
+            overflow-y: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            font-size: 2rem;
+            text-align: center;
+            color: var(--cyan);
+            text-shadow: 0 0 10px var(--cyan);
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 8px 0;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: var(--cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--cyan);
+        }
+
+        .btn-mindset {
+            border: 2px solid #30363d;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.02);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-mindset:hover {
+            border-color: var(--cyan);
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+        }
+
+        .btn-green {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .btn-green:hover {
+            background: var(--green);
+            color: #000;
+        }
+
+        .btn-pink {
+            border-color: var(--pink);
+            color: var(--pink);
+        }
+
+        .game-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--cyan);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .progress-bar-container {
+            background: #21262d;
+            height: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 10%;
+            background: var(--cyan);
+            transition: width 0.4s ease;
+        }
+
+        .minigame-layer {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+        }
+
+        #canvas-game {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* 3x3 Grid for Memory */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 350px;
+            aspect-ratio: 1;
+            margin: 0 auto;
+        }
+
+        .mem-card {
+            background: #30363d;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mem-card:active {
+            transform: scale(0.95);
+        }
+
+        .history-container {
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            text-align: left;
+            font-size: 0.8rem;
+        }
+
+        .history-item {
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #222;
+        }
+
+        .badge-growth {
+            color: var(--green);
+            font-weight: bold;
+        }
+
+        .badge-fixed {
+            color: var(--pink);
+            font-weight: bold;
+        }
+
+        .badge-win {
+            color: var(--yellow);
+            margin-left: 5px;
+        }
+
+        .badge-loss {
+            color: #888;
+            margin-left: 5px;
+        }
+
+        .label-small {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #8b949e;
+            margin-bottom: 4px;
+        }
+
+        .sort-item {
+            padding: 15px;
+            background: #30363d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+
+        .sort-item.correct {
+            border-color: var(--green);
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        #mg-instr-box {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--green);
+            color: #ccffcc;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .goal-text {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--yellow);
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-boundary">
+        <!-- START -->
+        <div id="screen-start" class="screen active">
+            <h1>NOOB TO <span style="color:var(--pink)">VIRAL</span></h1>
+            <p style="text-align:center; margin: 15px 0;">Entrena tu cerebro.<br>Acción > Reacción.</p>
+            <div id="intro-explanation"
+                style="background: rgba(0, 242, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.4; color: #8b949e;">
+                <p><strong>¿En qué consiste?</strong> Es un simulador de mentalidad. Enfrenta desafíos, elige actuar y
+                    supera minijuegos para mejorar.</p>
+                <p style="margin-top: 8px;"><strong>¿El objetivo?</strong> Desarrollar tu <em>Growth Mindset</em>. Lleva
+                    tu Skill al 100% y pasa de Noob a Viral.</p>
+            </div>
+            <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
+                <label class="label-small">TU NOMBRE:</label>
+                <input type="text" id="player-name-in" class="game-input" placeholder="Ingresa tu nombre..."
+                    maxlength="20">
+                <p class="label-small">ELIGE TU CAMINO:</p>
+                <button class="btn" onclick="preStart('gaming')">🎮 PRO GAMER</button>
+                <button class="btn btn-pink" style="border-color:var(--pink); color:var(--pink);"
+                    onclick="preStart('social')">📱 CONTENT CREATOR</button>
+            </div>
+        </div>
+
+        <!-- SCENARIO -->
+        <div id="screen-scenario" class="screen">
+            <div id="top-stats">
+                <p class="label-small" id="path-label">CAMINO: GAMING</p>
+                <div class="progress-bar-container">
+                    <div id="main-progress" class="progress-fill"></div>
+                </div>
+                <p style="text-align:right; font-size:0.8rem;" id="round-counter">NIVEL 1/10</p>
+            </div>
+            <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; gap: 10px;"
+                id="choice-container"></div>
+        </div>
+
+        <!-- MINIGAME INTRO -->
+        <div id="screen-mg-intro" class="screen" style="justify-content:center; text-align:center;">
+            <h2 id="mg-name" style="color:var(--green)">ENTRENANDO...</h2>
+            <div id="mg-instr-box">
+                <span id="mg-desc"></span>
+                <span id="mg-goal" class="goal-text"></span>
+            </div>
+            <button class="btn btn-green" onclick="startActiveMinigame()">¡ACEPTO EL RETO!</button>
+        </div>
+
+        <!-- MINIGAME ACTIVE -->
+        <div id="screen-mg-play" class="screen" style="padding:0;">
+            <div id="mg-header"
+                style="padding: 15px; display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.3); z-index:10;">
+                <div id="mg-timer" style="font-size:1.5rem; font-weight:bold; color:var(--yellow)"></div>
+                <div id="mg-subtext" style="font-size:0.9rem;"></div>
+            </div>
+            <div class="minigame-layer" id="mg-container">
+                <canvas id="canvas-game"></canvas>
+                <div id="dom-game-wrap" style="width:100%; padding:20px; display:none;"></div>
+            </div>
+        </div>
+
+        <!-- ROUND RESULT -->
+        <div id="screen-result" class="screen" style="justify-content:center; text-align:center;">
+            <h1 id="res-status"></h1>
+            <div id="res-icon" style="font-size:5rem; margin:20px 0;"></div>
+            <p id="res-feedback" style="margin-bottom:30px; line-height:1.6;"></p>
+            <button class="btn" onclick="goToNextLevel()">CONTINUAR</button>
+        </div>
+
+        <!-- FINAL RESULT -->
+        <div id="screen-final" class="screen" style="text-align:center;">
+            <h1 id="final-name-title">¡ANÁLISIS COMPLETO!</h1>
+            <div id="final-stats"
+                style="margin: 10px 0; padding:15px; border:2px solid var(--cyan); border-radius:10px;">
+                <p>Nivel de Mentalidad</p>
+                <div style="font-size:2.5rem; font-weight:bold; color:var(--green);" id="final-val">0%</div>
+                <p id="final-profile" style="color:var(--yellow); font-weight:bold; margin-top:5px; font-size:1.1rem;">
+                </p>
+            </div>
+
+            <div
+                style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; font-size:0.8rem; text-align:left; border-left: 4px solid var(--cyan); margin-bottom:15px;">
+                <p id="final-analysis-text"></p>
+            </div>
+
+            <div class="history-container" id="history-log"></div>
+
+            <button class="btn" style="font-size:0.8rem; border-color:#444; color:#888;"
+                onclick="location.reload()">REINICIAR SIMULACIÓN</button>
+        </div>
+    </div>
+
+    <script>
+        const paths = {
+            gaming: {
+                name: "Pro Gamer", scenarios: [
+                    { t: "Ranked Perdida", d: "Bajaste de rango. Tus amigos te llaman 'el ancla' del equipo.", f: "Soy un manco, nunca seré pro.", g: "Debo grindear más puntería." },
+                    { t: "Error en Torneo", d: "Fallaste el tiro decisivo frente a todo el público local.", f: "No sirvo bajo presión.", g: "Aún no controlo mis nervios." },
+                    { t: "Nerfeo de Main", d: "Tu personaje favorito ahora es débil tras el parche.", f: "Se acabó mi ventaja, ya no ganaré.", g: "Es hora de aprender un nuevo meta." },
+                    { t: "Lag Brutal", d: "Perdiste una final por un pico de lag repentino.", f: "Maldita suerte, no puedo avanzar.", g: "Pasa incluso a los mejores. Seguimos." },
+                    { t: "Burnout Pro", d: "Llevas 12 horas jugando y ya no coordinas bien.", f: "He perdido mi nivel.", g: "El descanso también es entrenamiento." },
+                    { t: "Equipo Disuelto", d: "Nadie quiere jugar contigo hoy, te sientes excluido.", f: "No soy lo suficientemente bueno.", g: "Practicaré solo para mejorar mi elo." },
+                    { t: "Hardstuck Oro", d: "Llevas meses en el mismo rango. Sientes que es tu techo.", f: "Aquí termina mi camino.", g: "Necesito cambiar mi rutina de entreno." },
+                    { t: "Streamer se burla", d: "Un pro reacciona a tu jugada y dice que eres mediocre.", f: "Qué vergüenza, borraré el juego.", g: "Sus críticas son datos para mejorar." },
+                    { t: "Final Nacional", d: "Estás frente a la pantalla más grande de tu vida. Sudas frío.", f: "Seguro haré el ridículo.", g: "Acepto el reto, gane o aprenda." },
+                    { t: "Crítica masiva", d: "Dicen que tu victoria fue 'suerte'.", f: "Tienen razón, no me lo merezco.", g: "Mi consistencia hablará por mí mañana." }
+                ], icons: ['🎮', '🖱️', '⌨️', '🎧', '🏆', '👾', '🕹️', '🔋']
+            },
+            social: {
+                name: "Content Creator", scenarios: [
+                    { t: "Shadowban", d: "Tus views bajaron a cero de la noche a la mañana.", f: "El algoritmo me odia, me retiro.", g: "Estudiaré qué tendencias hay hoy." },
+                    { t: "Comentario Hater", d: "Un hater dijo que tu video es 'cringe' y tiene 10k likes.", f: "Soy una vergüenza pública.", g: "No me define un comentario ajeno." },
+                    { t: "Copia de Video", d: "Un influencer grande te robó la idea y se hizo viral.", f: "Nadie verá mi video original ya.", g: "Significa que mi talento es real." },
+                    { t: "Fallo de Audio", d: "Tu mejor video se grabó sin sonido por error.", f: "Soy un inútil con la tecnología.", g: "Aprenderé a revisar dos veces." },
+                    { t: "Menos Followers", d: "Perdiste 500 seguidores hoy sin razón aparente.", f: "He dejado de gustar.", g: "Filtrando a los que no conectan." },
+                    { t: "Rechazo de Sponsor", d: "La marca que querías te dijo que no eres profesional.", f: "Nunca seré alguien importante.", g: "Aún no tengo el perfil, pero lo tendré." },
+                    { t: "Envidia Pura", d: "Ves a alguien crecer 10 veces más rápido que tú.", f: "Él tiene suerte, yo no tengo futuro.", g: "Le pediré consejos para crecer yo." },
+                    { t: "Falta de Ideas", d: "Página en blanco. Llevas 3 días sin subir nada.", f: "Mi creatividad se esfumó.", g: "Consumiré arte para inspirarme." },
+                    { t: "Cancelado", d: "Te juzgan por algo que hiciste hace años.", f: "Mi carrera ha terminado.", g: "Pediré disculpas y mostraré mi cambio." },
+                    { t: "Miedo al Exito", d: "Te invitan a un podcast importante y tienes pánico.", f: "Diré que estoy enfermo.", g: "Es la oportunidad de subir de nivel." }
+                ], icons: ['📱', '📸', '✨', '❤️', '🔥', '🎬', '🎤', '💎']
+            }
+        };
+
+        let state = { name: "", path: null, level: 0, skill: 10, history: [], mgPerformance: [] };
+
+        function showScreen(key) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('screen-' + key).classList.add('active'); }
+
+        function preStart(p) {
+            state.name = document.getElementById('player-name-in').value.trim() || "Jugador";
+            state.path = p;
+            paths[p].scenarios.sort(() => Math.random() - 0.5); // Randomize Scenarios
+            state.level = 0; state.skill = 10; state.history = []; state.mgPerformance = [];
+            loadScenario();
+        }
+
+        function loadScenario() {
+            if (state.level >= 10) { showFinal(); return; }
+            const data = paths[state.path].scenarios[state.level];
+            const container = document.getElementById('choice-container');
+            container.innerHTML = '';
+            const t = document.createElement('h2'); t.id = "scen-title"; t.innerText = data.t; t.style.color = "var(--yellow)";
+            const d = document.createElement('p'); d.id = "scen-desc"; d.innerText = data.d; d.style.marginBottom = "20px"; d.style.textAlign = "center"; d.style.lineHeight = "1.5";
+            container.appendChild(t); container.appendChild(d);
+
+            const bFixed = document.createElement('button'); bFixed.className = 'btn btn-mindset'; bFixed.innerText = data.f; bFixed.onclick = () => handleChoice(false);
+            const bGrowth = document.createElement('button'); bGrowth.className = 'btn btn-mindset'; bGrowth.innerText = data.g; bGrowth.onclick = () => handleChoice(true);
+
+            if (Math.random() > 0.5) { container.appendChild(bFixed); container.appendChild(bGrowth); }
+            else { container.appendChild(bGrowth); container.appendChild(bFixed); }
+
+            document.getElementById('path-label').innerText = `CAMINO: ${state.path.toUpperCase()}`;
+            document.getElementById('round-counter').innerText = `NIVEL ${state.level + 1}/10`;
+            document.getElementById('main-progress').style.width = state.skill + '%';
+            showScreen('scenario');
+        }
+
+        function handleChoice(isGrowth) {
+            // Will update history with MG result later
+            if (isGrowth) prepareMinigame();
+            else {
+                state.history.push({ title: paths[state.path].scenarios[state.level].t, choice: 'REACCIÓN', mgResult: '-' });
+                state.skill -= 5; if (state.skill < 0) state.skill = 0; showRoundResult(false, 0, false);
+            }
+        }
+
+        const minigames = [
+            { id: 'clicker', name: 'Reflejos Rápidos', desc: '¡Atento! Los iconos aparecen y desaparecen más lento. Suma 10 puntos. ¡CUIDADO! Si tocas una BOMBA, pierdes instantáneamente.', goal: 'Meta: 10 puntos' },
+            { id: 'maze', name: 'Laberinto de Precisión', desc: 'Haz clic en la BOLA VERDE y arrástrala hasta la meta amarilla sin tocar las paredes rojas. Si tocas la pared, PIERDES.', goal: 'Meta: Llegar al final' },
+            { id: 'memory', name: 'Memotest 4x4', desc: 'Encuentra las 8 parejas antes de que se acabe el tiempo (30s).', goal: 'Meta: Todas las parejas' },
+            { id: 'word', name: 'Decodificador', desc: 'Descifra la palabra desordenada. Si el tiempo se acaba, pierdes.', goal: 'Meta: Palabra correcta' },
+            { id: 'sorter', name: 'Ordenador Lógico', desc: 'Ordena de MENOR a MAYOR. Los errores no restan vida, pero pierdes tiempo.', goal: 'Meta: Orden perfecto' },
+            { id: 'neuro', name: 'Neuro-Patrón', desc: 'Memoriza la secuencia. Un solo error y PIERDES.', goal: 'Meta: Secuencia perfecta' }
+        ];
+
+        function prepareMinigame() {
+            state.currentMG = minigames[Math.floor(Math.random() * minigames.length)];
+            document.getElementById('mg-name').innerText = state.currentMG.name;
+            document.getElementById('mg-desc').innerText = state.currentMG.desc;
+            document.getElementById('mg-goal').innerText = state.currentMG.goal;
+            showScreen('mg-intro');
+        }
+
+        let mgInt; let mgAnim; let mScore = 0; let mTimer = 0; let mLives = 3; let currentWord = "";
+        function startActiveMinigame() {
+            showScreen('mg-play'); const c = document.getElementById('canvas-game'); const d = document.getElementById('dom-game-wrap');
+            c.style.display = 'none'; d.style.display = 'none'; clearInterval(mgInt); if (mgAnim) cancelAnimationFrame(mgAnim);
+            mScore = 0; mTimer = 0; mLives = 3; updateMGHeader();
+
+            switch (state.currentMG.id) {
+                case 'clicker': mTimer = 15; initClicker(); break;
+                case 'maze': mTimer = 20; initMaze(); break;
+                case 'memory': mTimer = 30; initMemory(); break; // 4x4 standard
+                case 'word': mTimer = 15; initWord(); break;
+                case 'sorter': mTimer = 15; initSorter(); break;
+                case 'neuro': mTimer = 25; initNeuro(); break;
+            }
+            mgInt = setInterval(() => {
+                mTimer--; updateMGHeader();
+                if (mTimer <= 0) {
+                    if (state.currentMG.id === 'word') {
+                        // Show word before fail
+                        document.getElementById('winin').value = currentWord;
+                        document.getElementById('winin').style.color = "var(--red)";
+                        document.getElementById('winin').style.borderColor = "var(--red)";
+                        setTimeout(() => endMinigame(false), 2000);
+                        clearInterval(mgInt);
+                    } else {
+                        endMinigame(false);
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateMGHeader() {
+            let sub = "";
+            if (state.currentMG.id === 'clicker') sub = `Aciertos: ${mScore}/10`;
+            else if (['maze', 'neuro'].includes(state.currentMG.id)) sub = "Vida: 1";
+            else sub = "Tiempo restante"; // Sorter, Word, Memory
+
+            document.getElementById('mg-timer').innerText = mTimer; document.getElementById('mg-subtext').innerText = sub;
+        }
+
+        function endMinigame(success, gain = 10) {
+            clearInterval(mgInt); if (mgAnim) cancelAnimationFrame(mgAnim);
+            state.mgPerformance.push(success);
+            state.history.push({ title: paths[state.path].scenarios[state.level].t, choice: 'ACCIÓN', mgResult: success ? 'WIN' : 'LOSS' });
+
+            if (success) {
+                state.skill += gain; if (state.skill > 100) state.skill = 100;
+                showRoundResult(true, gain, true);
+            } else {
+                state.skill += 5; if (state.skill > 100) state.skill = 100;
+                showRoundResult(true, 5, false);
+            }
+        }
+
+        function showRoundResult(isGrowth, gain = 0, mgSuccess = false) {
+            const h1 = document.getElementById('res-status'); const fb = document.getElementById('res-feedback'); const ico = document.getElementById('res-icon');
+
+            if (isGrowth) {
+                if (mgSuccess) {
+                    h1.innerText = "¡RETO SUPERADO!"; ico.innerText = "⚡";
+                    fb.innerHTML = `Excelente ejecución. Tu cerebro ha reforzado una nueva conexión.<br><br><b>Progreso: +${gain}% Skill</b>`;
+                } else {
+                    h1.innerText = "¡INTENTO FALLIDO!"; ico.innerText = "💪";
+                    fb.innerHTML = `No lograste la meta, pero aquí está la clave del Growth Mindset:<br><b>El resultado no te define, el esfuerzo sí.</b><br>Aprendiste del error y seguiste adelante.<br><br><b>Progreso: +${gain}% Skill</b>`;
+                }
+            } else {
+                h1.innerText = "REACCIÓN PASIVA"; ico.innerText = "🚫";
+                fb.innerHTML = `Te rendiste antes de empezar. El cerebro no aprende si evitas el desafío.<br><br><b>Penalización: -5% Skill</b>`;
+            }
+            showScreen('result');
+        }
+
+        function goToNextLevel() { state.level++; loadScenario(); }
+
+        function showFinal() {
+            const growthCount = state.history.filter(h => h.choice === 'ACCIÓN').length;
+            const mgWins = state.mgPerformance.filter(x => x).length;
+            const mgTotal = state.mgPerformance.length;
+
+            let profile = ""; let analysis = "";
+            if (growthCount < 4) {
+                profile = "EL ESTATICO"; analysis = "Tu tendencia fue evitar el riesgo. El miedo al error te paralizó. Recuerda: fallar es la única manera de aprender.";
+            } else if (growthCount >= 8) {
+                if (mgWins / mgTotal > 0.7) {
+                    profile = "MAESTRO DEL AÚN"; analysis = "Impecable. No solo tomaste acción, sino que demostraste habilidad y resiliencia. Estás listo para cualquier desafío real.";
+                } else {
+                    profile = "GUERRERO RESILIENTE"; analysis = "Tomaste todas las oportunidades de mejora. Aunque algunos retos te superaron, tu actitud fue la correcta. ¡Ese es el espíritu!";
+                }
+            } else {
+                profile = "EN TRANSICIÓN"; analysis = "A veces te atreves, a veces te escondes. Tu próxima meta es convertir esos momentos de duda en momentos de acción.";
+            }
+
+            document.getElementById('final-name-title').innerText = `INFORME: ${state.name.toUpperCase()}`;
+            document.getElementById('final-val').innerText = state.skill + '%';
+            document.getElementById('final-profile').innerText = profile;
+            document.getElementById('final-analysis-text').innerText = analysis;
+
+            const log = document.getElementById('history-log'); log.innerHTML = '<b>Bitácora de Decisiones:</b><br>';
+            state.history.forEach((h, i) => {
+                let mgIcon = "";
+                if (h.choice === 'ACCIÓN') mgIcon = (h.mgResult === 'WIN') ? '<span class="badge-win">✅</span>' : '<span class="badge-loss">❌</span>';
+                log.innerHTML += `<div class="history-item">${i + 1}. ${h.title}: <span class="${h.choice === 'ACCIÓN' ? 'badge-growth' : 'badge-fixed'}">${h.choice}</span>${mgIcon}</div>`;
+            });
+            showScreen('final');
+        }
+
+        // Download Results function removed per user request
+
+        // --- MINIGAMES V6 ---
+
+        function initClicker() {
+            const c = document.getElementById('canvas-game'); c.style.display = 'block'; const ctx = c.getContext('2d');
+            c.width = 400; c.height = 500;
+            let items = []; let bombIcon = '💣'; let goodIcons = paths[state.path].icons;
+
+            function loop() {
+                ctx.clearRect(0, 0, c.width, c.height);
+                // Spawn Rate: 1.5% chance per frame, max 3 items. Easier.
+                if (Math.random() < 0.015 && items.length < 3) {
+                    const isBomb = Math.random() < 0.25;
+                    items.push({
+                        x: Math.random() * 320 + 40, y: Math.random() * 420 + 40,
+                        icon: isBomb ? bombIcon : goodIcons[Math.floor(Math.random() * goodIcons.length)],
+                        isBomb: isBomb,
+                        life: 240, // 4s
+                        maxLife: 240,
+                        scale: 0
+                    });
+                }
+                for (let i = items.length - 1; i >= 0; i--) {
+                    let it = items[i]; it.life--;
+                    if (it.life > 220) it.scale = (240 - it.life) / 20;
+                    else if (it.life < 20) it.scale = it.life / 20;
+                    else it.scale = 1;
+
+                    ctx.save(); ctx.translate(it.x, it.y); ctx.scale(it.scale, it.scale);
+                    ctx.font = "45px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(it.icon, 0, 0);
+
+                    // Visible Hitbox for Debug (Optional, removed for final)
+                    // ctx.strokeStyle="rgba(255,255,255,0.2)"; ctx.beginPath(); ctx.arc(0,0,35,0,Math.PI*2); ctx.stroke();
+
+                    ctx.fillStyle = it.isBomb ? "red" : "lime"; ctx.fillRect(-20, 30, 40 * (it.life / it.maxLife), 4);
+                    ctx.restore();
+
+                    if (it.life <= 0) items.splice(i, 1);
+                }
+                mgAnim = requestAnimationFrame(loop);
+            }
+            loop();
+
+            c.onmousedown = (e) => {
+                const r = c.getBoundingClientRect();
+                // Better coordinate mapping
+                const scaleX = c.width / r.width;
+                const scaleY = c.height / r.height;
+                const mx = (e.clientX - r.left) * scaleX;
+                const my = (e.clientY - r.top) * scaleY;
+
+                for (let i = items.length - 1; i >= 0; i--) {
+                    let it = items[i];
+                    if (Math.hypot(mx - it.x, my - it.y) < 45) { // Radius 45 hit forgiveness
+                        if (it.isBomb) {
+                            mLives = 0; updateMGHeader(); items.splice(i, 1);
+                            c.style.backgroundColor = "rgba(255,0,0,0.3)"; setTimeout(() => c.style.backgroundColor = "transparent", 100);
+                            endMinigame(false);
+                        } else {
+                            mScore++; updateMGHeader(); items.splice(i, 1);
+                            if (mScore >= 10) endMinigame(true, 15);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        function initMaze() {
+            const c = document.getElementById('canvas-game'); c.style.display = 'block'; const ctx = c.getContext('2d'); c.width = 400; c.height = 500;
+            let dragging = false; let ballX = 60, ballY = 60;
+            const track2 = [{ x: 30, y: 30, w: 80, h: 100 }, { x: 30, y: 100, w: 50, h: 350 }, { x: 30, y: 400, w: 340, h: 50 }, { x: 320, y: 150, w: 50, h: 300 }, { x: 150, y: 150, w: 220, h: 50 }, { x: 150, y: 150, w: 50, h: 150 }];
+            const goal = { x: 175, y: 275 };
+            function draw() {
+                ctx.fillStyle = "#ff3131"; ctx.fillRect(0, 0, 400, 500);
+                ctx.fillStyle = "#00f2ff"; track2.forEach(t => ctx.fillRect(t.x, t.y, t.w, t.h));
+                ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(60, 60, 15, 0, 7); ctx.fill();
+                ctx.fillStyle = "#fff200"; ctx.beginPath(); ctx.arc(goal.x, goal.y, 20, 0, 7); ctx.fill();
+                ctx.fillStyle = "#39ff14"; ctx.beginPath(); ctx.arc(ballX, ballY, 12, 0, 7); ctx.fill();
+                mgAnim = requestAnimationFrame(draw);
+            }
+            draw();
+
+            const getPos = (e) => {
+                const r = c.getBoundingClientRect();
+                return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) };
+            }
+
+            c.onmousedown = (e) => { const p = getPos(e); if (Math.hypot(p.x - ballX, p.y - ballY) < 25) dragging = true; }
+            window.onmousemove = (e) => {
+                if (!dragging) return;
+                const p = getPos(e); ballX = p.x; ballY = p.y;
+                if (!track2.some(t => p.x > t.x && p.x < t.x + t.w && p.y > t.y && p.y < t.y + t.h)) { dragging = false; ballX = 60; ballY = 60; endMinigame(false); }
+                if (Math.hypot(p.x - goal.x, p.y - goal.y) < 20) { dragging = false; endMinigame(true, 15); }
+            }
+            window.onmouseup = () => { dragging = false; if (Math.hypot(ballX - goal.x, ballY - goal.y) > 20) { ballX = 60; ballY = 60; } }
+        }
+
+        function initMemory() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block'; d.innerHTML = '<div class="memory-grid" id="mgrid"></div>';
+            const pack = paths[state.path].icons;
+            // 4x4 = 16 cards. 8 pairs.
+            let icons8 = pack.slice(0, 8);
+            let cards = [...icons8, ...icons8];
+            cards.sort(() => Math.random() - 0.5);
+            let fli = []; let match = 0;
+
+            cards.forEach(e => {
+                const c = document.createElement('div'); c.className = 'mem-card'; c.onclick = () => {
+                    if (fli.length < 2 && !c.innerText && !c.classList.contains('solved')) {
+                        c.innerText = e; fli.push(c);
+                        if (fli.length === 2) {
+                            if (fli[0].innerText === fli[1].innerText) {
+                                match++; fli[0].classList.add('solved'); fli[1].classList.add('solved'); fli[0].style.borderColor = 'var(--green)'; fli[1].style.borderColor = 'var(--green)';
+                                fli = []; if (match === 8) endMinigame(true, 20);
+                            } else {
+                                setTimeout(() => { fli[0].innerText = ''; fli[1].innerText = ''; fli = []; }, 600);
+                            }
+                        }
+                    }
+                }; document.getElementById('mgrid').appendChild(c);
+            });
+        }
+
+        function initWord() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
+            const words = ['PERSISTENCIA', 'ESTRATEGIA', 'COMMUNITY', 'ALGORITMO', 'CREATIVIDAD']; currentWord = words[Math.floor(Math.random() * words.length)];
+            d.innerHTML = `<h3 style="margin-bottom:20px;">ORDENA: <span style="color:var(--cyan); letter-spacing:5px;">${currentWord.split('').sort(() => Math.random() - 0.5).join('')}</span></h3><input type="text" id="winin" class="game-input">`;
+            const ipt = document.getElementById('winin'); ipt.focus(); ipt.oninput = () => { if (ipt.value.toUpperCase() === currentWord) endMinigame(true, 15); }
+        }
+
+        function initSorter() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
+            let nums = []; for (let i = 0; i < 5; i++) nums.push(Math.floor(Math.random() * 100)); nums.sort((a, b) => a - b);
+            d.innerHTML = `<h3>ORDENA DE MENOR A MAYOR:</h3><div id="sort-c"></div>`;
+            [...nums].sort(() => Math.random() - 0.5).forEach(n => {
+                const it = document.createElement('div'); it.className = 'sort-item'; it.innerText = n; it.onclick = () => {
+                    if (n === nums[0]) { it.style.borderColor = 'var(--green)'; nums.shift(); if (!nums.length) endMinigame(true, 15); }
+                    else {
+                        // Visual feedback only
+                        it.style.backgroundColor = 'var(--pink)';
+                        setTimeout(() => it.style.backgroundColor = '#30363d', 200);
+                    }
+                }; document.getElementById('sort-c').appendChild(it);
+            });
+        }
+
+        function initNeuro() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
+            const cols = ['var(--cyan)', 'var(--pink)', 'var(--green)', 'var(--yellow)'];
+            let seq = []; for (let i = 0; i < 5; i++) seq.push(Math.floor(Math.random() * 4)); let uSeq = [];
+            d.innerHTML = `<h3>MEMORIZA LA SECUENCIA:</h3><div id="nbox" style="width:100%;height:80px;border-radius:10px;margin:20px 0;border:2px solid #fff;"></div><div id="nbtns" style="display:flex;gap:5px;"></div>`;
+            let i = 0; let iv = setInterval(() => { const box = document.getElementById('nbox'); if (box) { box.style.backgroundColor = cols[seq[i]]; setTimeout(() => box.style.backgroundColor = 'transparent', 400); i++; if (i >= 5) { clearInterval(iv); enable(); } } }, 600);
+            function enable() {
+                const ctr = document.getElementById('nbtns'); ctr.innerHTML = '';
+                cols.forEach((c, idx) => {
+                    const b = document.createElement('button'); b.className = 'btn'; b.style.borderColor = c; b.style.flex = "1"; b.style.height = "60px"; b.style.background = c; b.style.opacity = "0.3";
+                    b.onmousedown = () => { b.style.opacity = "1"; }; b.onmouseup = () => { b.style.opacity = "0.3"; check(idx); };
+                    ctr.appendChild(b);
+                });
+            }
+            function check(idx) {
+                if (idx !== seq[uSeq.length]) { endMinigame(false); }
+                else { uSeq.push(idx); if (uSeq.length === 5) endMinigame(true, 20); }
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Minigame Lab - Noob to Viral</title>
+    <style>
+        body {
+            background: #0b0e14;
+            color: #e6edf3;
+            font-family: sans-serif;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        #menu {
+            width: 250px;
+            background: #161b22;
+            padding: 20px;
+            border-radius: 12px;
+            height: fit-content;
+        }
+
+        #game-boundary {
+            flex-grow: 1;
+            max-width: 500px;
+            height: 600px;
+            background: #161b22;
+            border: 2px solid #30363d;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            background: #21262d;
+            color: var(--cyan, #00f2ff);
+            border: 1px solid #30363d;
+        }
+
+        button:hover {
+            background: #30363d;
+        }
+
+        .minigame-layer {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Copy styles from main game */
+        :root {
+            --cyan: #00f2ff;
+            --green: #39ff14;
+            --red: #ff3131;
+        }
+
+        .game-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--cyan);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 350px;
+            aspect-ratio: 1;
+            margin: 0 auto;
+        }
+
+        .mem-card {
+            background: #30363d;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sort-item {
+            padding: 15px;
+            background: #30363d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+
+        #header {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="menu">
+        <h3>Minigame Lab</h3>
+        <button onclick="play('clicker')">Clicker (Reflejos)</button>
+        <button onclick="play('maze')">Laberinto</button>
+        <button onclick="play('memory')">Memotest 4x4</button>
+        <button onclick="play('word')">Palabra</button>
+        <button onclick="play('sorter')">Ordenador</button>
+        <button onclick="play('neuro')">Neuro-Patrón</button>
+    </div>
+    <div id="game-boundary">
+        <div id="header">
+            <span id="timer">0</span>
+            <span id="score">0</span>
+        </div>
+        <div class="minigame-layer">
+            <canvas id="canvas-game" style="display:none"></canvas>
+            <div id="dom-game-wrap" style="width:100%; padding:20px; display:none;"></div>
+            <div id="result-overlay"
+                style="position: absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; flex-direction:column;">
+                <h1 id="res-title"></h1>
+                <button style="width:100px"
+                    onclick="document.getElementById('result-overlay').style.display='none'">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Minimal logic port
+        let mgInt, mgAnim, mScore = 0, mTimer = 0, mLives = 3, currentWord = "";
+        // Mock icons
+        const icons = ['🎮', '🖱️', '⌨️', '🎧', '🏆'];
+
+        function updateHeader() {
+            let t = document.getElementById('timer');
+            let s = document.getElementById('score');
+            t.innerText = mTimer;
+
+            // Hardcoded logic to match index.html update
+            // We don't have state.currentMG.id easily here without more refactoring, 
+            // but we can infer or simpler: just show general stats.
+            // Actually, let's just show "Playing" or specific counts.
+            // For simplicity in the lab, I'll stick to a generic status or just what's relevant.
+
+            s.innerText = `Puntos/Vida: ${mScore}/${mLives}`;
+        }
+        function end(win) {
+            clearInterval(mgInt); if (mgAnim) cancelAnimationFrame(mgAnim);
+            document.getElementById('result-overlay').style.display = 'flex';
+            document.getElementById('res-title').innerText = win ? "WIN" : "LOSS";
+            document.getElementById('res-title').style.color = win ? "lime" : "red";
+        }
+
+        function play(imgId) {
+            clearInterval(mgInt); if (mgAnim) cancelAnimationFrame(mgAnim);
+            document.getElementById('canvas-game').style.display = 'none';
+            document.getElementById('dom-game-wrap').style.display = 'none';
+            document.getElementById('result-overlay').style.display = 'none';
+            mScore = 0; mLives = 3;
+
+            switch (imgId) {
+                case 'clicker': mTimer = 15; initClicker(); break;
+                case 'maze': mTimer = 20; initMaze(); break;
+                case 'memory': mTimer = 30; initMemory(); break;
+                case 'word': mTimer = 15; initWord(); break;
+                case 'sorter': mTimer = 15; initSorter(); break;
+                case 'neuro': mTimer = 25; initNeuro(); break;
+            }
+            currentGameId = imgId;
+            mgInt = setInterval(() => {
+                mTimer--; updateHeader();
+                if (mTimer <= 0) {
+                    if (currentGameId === 'word') {
+                        const i = document.getElementById('wi');
+                        if (i) { i.value = currentWord; i.style.color = "red"; }
+                        setTimeout(() => end(false), 2000);
+                        clearInterval(mgInt);
+                    } else {
+                        end(false);
+                    }
+                }
+            }, 1000);
+            updateHeader();
+        }
+
+        // --- Engines Copied & Minimized ---
+        function initClicker() {
+            const c = document.getElementById('canvas-game'); c.style.display = 'block'; const ctx = c.getContext('2d');
+            c.width = 500; c.height = 550; // Adjusted for lab
+            let items = [];
+            function loop() {
+                ctx.clearRect(0, 0, c.width, c.height);
+                if (Math.random() < 0.015 && items.length < 3) {
+                    const isBomb = Math.random() < 0.25; items.push({ x: Math.random() * 400 + 50, y: Math.random() * 450 + 50, icon: isBomb ? '💣' : '🎮', isBomb: isBomb, life: 240, ml: 240, s: 0 });
+                }
+                for (let i = items.length - 1; i >= 0; i--) {
+                    let it = items[i]; it.life--; it.s = it.life > 220 ? (240 - it.life) / 20 : it.life < 20 ? it.life / 20 : 1;
+                    ctx.save(); ctx.translate(it.x, it.y); ctx.scale(it.s, it.s); ctx.font = "40px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(it.icon, 0, 0);
+                    ctx.fillStyle = it.isBomb ? "red" : "lime"; ctx.fillRect(-20, 30, 40 * (it.life / it.ml), 4); ctx.restore();
+                    if (it.life <= 0) items.splice(i, 1);
+                }
+                mgAnim = requestAnimationFrame(loop);
+            }
+            loop();
+            c.onmousedown = (e) => {
+                const r = c.getBoundingClientRect(); const sx = c.width / r.width; const sy = c.height / r.height;
+                const mx = (e.clientX - r.left) * sx; const my = (e.clientY - r.top) * sy;
+                for (let i = items.length - 1; i >= 0; i--) {
+                    if (Math.hypot(mx - items[i].x, my - items[i].y) < 45) {
+                        if (items[i].isBomb) { mLives = 0; updateHeader(); items.splice(i, 1); end(false); }
+                        else { mScore++; updateHeader(); items.splice(i, 1); if (mScore >= 10) end(true); }
+                        break;
+                    }
+                }
+            }
+        }
+
+        function initMemory() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block'; d.innerHTML = '<div class="memory-grid" id="mg"></div>';
+            // Need 8 pairs. 
+            const base = ['🎮', '🖱️', '🎧', '⌨️', '🏆', '👾', '🕹️', '🔋'];
+            let c = [...base, ...base].sort(() => Math.random() - 0.5); let f = [], m = 0;
+            c.forEach(e => {
+                let el = document.createElement('div'); el.className = 'mem-card'; el.onclick = () => {
+                    if (f.length < 2 && !el.innerText && !el.classList.contains('s')) {
+                        el.innerText = e; f.push(el);
+                        if (f.length === 2) {
+                            if (f[0].innerText === f[1].innerText) { m++; f[0].classList.add('s'); f[1].classList.add('s'); f = []; if (m === 8) end(true); }
+                            else { setTimeout(() => { f[0].innerText = ''; f[1].innerText = ''; f = [] }, 600); }
+                        }
+                    }
+                }; document.getElementById('mg').appendChild(el);
+            });
+        }
+
+        // Add placeholders for others to save space, assuming clicker/mem were the complex ones asked for fix.
+        // Actually I should add them all for completeness of the "Lab".
+        function initMaze() {
+            const c = document.getElementById('canvas-game'); c.style.display = 'block'; const ctx = c.getContext('2d'); c.width = 500; c.height = 550;
+            let dragging = false, bx = 60, by = 60, goal = { x: 175, y: 275 };
+            const tr = [{ x: 30, y: 30, w: 80, h: 100 }, { x: 30, y: 100, w: 50, h: 350 }, { x: 30, y: 400, w: 340, h: 50 }, { x: 320, y: 150, w: 50, h: 300 }, { x: 150, y: 150, w: 220, h: 50 }, { x: 150, y: 150, w: 50, h: 150 }];
+            function dr() {
+                ctx.fillStyle = "#ff3131"; ctx.fillRect(0, 0, 500, 550); ctx.fillStyle = "#00f2ff"; tr.forEach(t => ctx.fillRect(t.x, t.y, t.w, t.h));
+                ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(60, 60, 15, 0, 7); ctx.fill(); ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(goal.x, goal.y, 20, 0, 7); ctx.fill();
+                ctx.fillStyle = "lime"; ctx.beginPath(); ctx.arc(bx, by, 12, 0, 7); ctx.fill(); mgAnim = requestAnimationFrame(dr);
+            }
+            dr();
+            const gp = (e) => { const r = c.getBoundingClientRect(); return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) }; }
+            c.onmousedown = (e) => { if (Math.hypot(gp(e).x - bx, gp(e).y - by) < 25) dragging = true; }
+            window.onmousemove = (e) => { if (dragging) { const p = gp(e); bx = p.x; by = p.y; if (!tr.some(t => p.x > t.x && p.x < t.x + t.w && p.y > t.y && p.y < t.y + t.h)) { dragging = false; bx = 60; by = 60; end(false); } if (Math.hypot(p.x - goal.x, p.y - goal.y) < 20) end(true); } }
+            window.onmouseup = () => { dragging = false; }
+        }
+        function initWord() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block'; currentWord = "EJEMPLO";
+            d.innerHTML = `<h3>${currentWord}</h3><input id="wi" class="game-input">`;
+            document.getElementById('wi').oninput = (e) => { if (e.target.value.toUpperCase() === currentWord) end(true); }
+        }
+        function initSorter() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block'; let n = [10, 50, 99].sort((a, b) => a - b);
+            d.innerHTML = '<div id="sc"></div>';[...n].sort(() => Math.random() - 0.5).forEach(x => {
+                let b = document.createElement('div'); b.className = 'sort-item'; b.innerText = x;
+                b.onclick = () => { if (x === n[0]) { n.shift(); b.style.background = 'green'; if (!n.length) end(true); } else { b.style.background = 'red'; setTimeout(() => b.style.background = '#30363d', 200); } }
+                document.getElementById('sc').appendChild(b);
+            });
+        }
+        function initNeuro() {
+            const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
+            let s = [0, 1, 2, 3], u = []; let c = ['cyan', 'pink', 'green', 'yellow'];
+            d.innerHTML = '<div id="nb" style="height:50px;width:100%;border:1px solid white"></div><div id="nbt" style="display:flex"></div>';
+            let i = 0; let iv = setInterval(() => { document.getElementById('nb').style.background = c[s[i]]; setTimeout(() => document.getElementById('nb').style.background = 'none', 200); i++; if (i >= 4) { clearInterval(iv); en(); } }, 500);
+            function en() {
+                c.forEach((cl, ix) => {
+                    let b = document.createElement('button'); b.style.background = cl; b.style.flex = 1; b.style.height = '50px';
+                    b.onmouseup = () => { if (ix !== s[u.length]) { end(false); } else { u.push(ix); if (u.length === 4) end(true); } }
+                    document.getElementById('nbt').appendChild(b);
+                })
+            }
+        }
+    </script>
+</body>
+
+</html>
