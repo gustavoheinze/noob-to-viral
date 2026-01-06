@@ -863,12 +863,12 @@
             const d = document.getElementById('dom-game-wrap'); d.style.display = 'block';
             d.innerHTML = '<h3>ENCUENTRA EL INTRUSO:</h3><div class="memory-grid" id="sgrid"></div>';
 
-            // Categories for thematic challenge
+            // Extended Categories for variety (at least 15 each)
             const categories = [
-                { name: 'animales', items: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯'] },
-                { name: 'frutas', items: ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍', '🥝', '🍋', '🍑', '🍐'] },
-                { name: 'verduras', items: ['🥕', '🥦', '🌽', '🥒', '🍅', '🥬', '🧄', '🧅', '🌶️', '🥔'] },
-                { name: 'objetos', items: ['⚽', '🏀', '🎾', '🏐', '🎱', '🏈', '⚾', '🥎', '🎳', '🏓'] }
+                { name: 'animales', items: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🦉'] },
+                { name: 'frutas', items: ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍', '🥝', '🍋', '🍑', '🍐', '🍓', '🫐', '🍊', '🍈', '🍏', '🥭', '🥥'] },
+                { name: 'objetos', items: ['⚽', '🏀', '�', '🏐', '�', '🏈', '⚾', '�', '�', '🏓', '🎸', '🎨', '📷', '🔍', '🎧', '💻', '📱', '⌚', '🎮'] },
+                { name: 'comida', items: ['🍕', '�', '�', '�', '�', '🧂', '🥓', '�', '🧇', '�', '�', '🥐', '🥨', '🥯', '🧀', '�', '🌯'] }
             ];
 
             // Pick 2 different categories
@@ -876,18 +876,19 @@
             const mainCat = shuffled[0];
             const intruderCat = shuffled[1];
 
-            // Pick random items from each category
-            const base = mainCat.items[Math.floor(Math.random() * mainCat.items.length)];
+            // Shuffle main category items and take 15 DIFFERENT ones
+            let mainItems = [...mainCat.items].sort(() => Math.random() - 0.5).slice(0, 15);
+
+            // Pick 1 random intruder from the other category
             const intruder = intruderCat.items[Math.floor(Math.random() * intruderCat.items.length)];
 
-            // Create grid: 15 base + 1 intruder = 16 total (4x4 grid)
-            let cards = Array(15).fill(base);
-            cards.push(intruder);
+            // Combine: 15 unique items from main cat + 1 intruder
+            let cards = [...mainItems, intruder];
             cards.sort(() => Math.random() - 0.5);
 
             cards.forEach(e => {
                 const c = document.createElement('div'); c.className = 'mem-card'; c.innerText = e;
-                c.style.fontSize = "2.5rem";
+                c.style.fontSize = "2.2rem";
                 c.onclick = () => { if (e === intruder) endMinigame(true, 15); else endMinigame(false); };
                 document.getElementById('sgrid').appendChild(c);
             });
