@@ -660,6 +660,25 @@
                 log.innerHTML += `<div class="history-item">${i + 1}. ${h.title}: <span class="${h.choice === 'ACCIÓN' ? 'badge-growth' : 'badge-fixed'}">${h.choice}</span>${mgIcon}</div>`;
             });
             showScreen('final');
+
+            // --- SAVE GLOBAL HISTORY (Background) ---
+            saveGameResult(profile);
+        }
+
+        function saveGameResult(finalProfile) {
+            const result = {
+                date: new Date().toLocaleString(),
+                name: state.name,
+                path: state.path === 'gaming' ? 'Pro Gamer' : 'Content Creator',
+                score: state.skill,
+                profile: finalProfile
+            };
+
+            let history = JSON.parse(localStorage.getItem('noobToViral_saves') || "[]");
+            history.push(result);
+            // Keep last 50 games max
+            if (history.length > 50) history = history.slice(history.length - 50);
+            localStorage.setItem('noobToViral_saves', JSON.stringify(history));
         }
 
         // Download Results function removed per user request
